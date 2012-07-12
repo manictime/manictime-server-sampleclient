@@ -27,7 +27,7 @@
         <StackPanel Grid.Row="1" HorizontalAlignment="Stretch">
             <Button x:Name="HomeButton" Content="Get home" Click="HomeButton_OnClick" Margin="1" />
             <Button x:Name="TimelinesButton" Content="Get timelines" Click="TimelinesButton_OnClick" Margin="1" />
-            <Button x:Name="GetTimelineButton" Content="Get timeline" Click="GetTimelineButton_OnClick" Margin="1" />
+            <Button x:Name="GetActivitiesButton" Content="Get activities" Click="GetActivitiesButton_OnClick" Margin="1" />
             <Button x:Name="GetTagCombinationsButton" Content="Get tag combinations" Click="GetTagCombinationsButton_OnClick" Margin="1" />
             <Button x:Name="UpdateTagCombinationsButton" Content="Update tag combinations" Click="UpdateTagCombinationsButton_OnClick" Margin="1" />
         </StackPanel>

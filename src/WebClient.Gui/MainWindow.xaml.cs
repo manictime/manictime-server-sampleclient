@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -27,7 +28,7 @@ namespace Finkit.ManicTime.WebClient.Gui
                 ServerUrlTextBox.IsEnabled = CancellationTokenSource == null;
                 HomeButton.IsEnabled = CancellationTokenSource == null;
                 TimelinesButton.IsEnabled = CancellationTokenSource == null;
-                GetTimelineButton.IsEnabled = CancellationTokenSource == null;
+                GetActivitiesButton.IsEnabled = CancellationTokenSource == null;
                 GetTagCombinationsButton.IsEnabled = CancellationTokenSource == null;
                 UpdateTagCombinationsButton.IsEnabled = CancellationTokenSource == null;
                 CancelButton.IsEnabled = CancellationTokenSource != null;
@@ -52,7 +53,7 @@ namespace Finkit.ManicTime.WebClient.Gui
             SendAsync((client, cancellationToken) => client.GetTimelinesAsync(cancellationToken));
         }
 
-        private void GetTimelineButton_OnClick(object sender, RoutedEventArgs e)
+        private void GetActivitiesButton_OnClick(object sender, RoutedEventArgs e)
         {
             Output("Getting timelines...");
             SendAsync((client, cancellationToken) => client.GetTimelinesAsync(cancellationToken))
@@ -71,12 +72,15 @@ namespace Finkit.ManicTime.WebClient.Gui
                         Owner = this,
                         WindowStartupLocation = WindowStartupLocation.CenterOwner,
                         Timelines = timelines.Timelines,
+                        SelectedTimeline = timelines.Timelines.FirstOrDefault(),
+                        FromTime = DateTime.Today,
+                        ToTime = DateTime.Today,
                         SizeToContent = SizeToContent.WidthAndHeight
                     };
                     if (window.ShowDialog() == true)
                     {
-                        Output("Getting timeline...");
-                        SendAsync((client, cancellationToken) => client.GetTimelineAsync(window.SelectedTimeline.TimelineId, cancellationToken));
+                        Output("Getting activities...");
+                        SendAsync((client, cancellationToken) => client.GetActivitiesByTimelineIdAsync(window.SelectedTimeline.TimelineId, window.FromTime.Value, window.ToTime.Value.AddDays(1), cancellationToken));
                     }
                 }, TaskScheduler.FromCurrentSynchronizationContext());
         }

@@ -48,7 +48,12 @@ namespace Finkit.ManicTime.WebClient
                 .Unwrap();
         }
 
-        public Task<TimelineResource> GetTimelineAsync(string timelineId, CancellationToken cancellationToken)
+        public Task<TimelineResource> GetActivitiesByTimelineIdAsync(string timelineId, DateTime fromTime, DateTime toTime)
+        {
+            return GetActivitiesByTimelineIdAsync(timelineId, fromTime, toTime, CancellationToken.None);
+        }
+
+        public Task<TimelineResource> GetActivitiesByTimelineIdAsync(string timelineId, DateTime fromTime, DateTime toTime, CancellationToken cancellationToken)
         {
             return GetTimelinesAsync(cancellationToken)
                 .ContinueWith(t =>
@@ -57,12 +62,26 @@ namespace Finkit.ManicTime.WebClient
                     var timeline = t.Result == null || t.Result.Timelines == null
                         ? null
                         : t.Result.Timelines.SingleOrDefault(tr => tr.TimelineId == timelineId);
-                    string timelineUrl = timeline == null ? null : timeline.Links.Url(Relations.Self);
-                    if (timelineUrl != null)
-                        return GetAsync<TimelineResource>(timelineUrl, cancellationToken);
+                    string activitiesUrl = timeline == null ? null : timeline.Links.Url(Relations.Activities);
+                    if (activitiesUrl != null)
+                        return GetActivitiesByUrlAsync(activitiesUrl, fromTime, toTime, cancellationToken);
                     return null;
                 }, cancellationToken)
                 .Unwrap();
+        }
+
+        public Task<TimelineResource> GetActivitiesByUrlAsync(string activitiesUrl, DateTime fromTime, DateTime toTime)
+        {
+            return GetActivitiesByUrlAsync(activitiesUrl, fromTime, toTime, CancellationToken.None);
+        }
+
+        public Task<TimelineResource> GetActivitiesByUrlAsync(string activitiesUrl, DateTime fromTime, DateTime toTime, CancellationToken cancellationToken)
+        {
+            string url = new UriBuilder(activitiesUrl)
+                .WithQueryParameter("fromTime", fromTime.FormatIso8601())
+                .WithQueryParameter("toTime", toTime.FormatIso8601())
+                .ToString();
+            return GetAsync<TimelineResource>(url, cancellationToken);
         }
 
         public Task<TagCombinationListResource> GetTagCombinationsAsync(CancellationToken cancellationToken)
