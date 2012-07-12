@@ -43,18 +43,21 @@ namespace Finkit.ManicTime.WebClient.Gui
 
         private void HomeButton_OnClick(object sender, RoutedEventArgs e)
         {
+            ClearOutput();
             Output("Getting home...");
             SendAsync((client, cancellationToken) => client.GetHomeAsync(cancellationToken));
         }
 
         private void TimelinesButton_OnClick(object sender, RoutedEventArgs e)
         {
+            ClearOutput();
             Output("Getting timelines...");
             SendAsync((client, cancellationToken) => client.GetTimelinesAsync(cancellationToken));
         }
 
         private void GetActivitiesButton_OnClick(object sender, RoutedEventArgs e)
         {
+            ClearOutput();
             Output("Getting timelines...");
             SendAsync((client, cancellationToken) => client.GetTimelinesAsync(cancellationToken))
                 .ContinueWith(t =>
@@ -79,6 +82,7 @@ namespace Finkit.ManicTime.WebClient.Gui
                     };
                     if (window.ShowDialog() == true)
                     {
+                        ClearOutput();
                         Output("Getting activities...");
                         SendAsync((client, cancellationToken) => client.GetActivitiesByTimelineIdAsync(window.SelectedTimeline.TimelineId, window.FromTime.Value, window.ToTime.Value.AddDays(1), cancellationToken));
                     }
@@ -87,12 +91,14 @@ namespace Finkit.ManicTime.WebClient.Gui
 
         private void GetTagCombinationsButton_OnClick(object sender, RoutedEventArgs e)
         {
+            ClearOutput();
             Output("Getting tag combination list...");
             SendAsync((client, cancellationToken) => client.GetTagCombinationsAsync(cancellationToken));
         }
 
         private void UpdateTagCombinationsButton_OnClick(object sender, RoutedEventArgs e)
         {
+            ClearOutput();
             Output("Getting tag combination list...");
             SendAsync((client, cancellationToken) => client.GetTagCombinationsAsync(cancellationToken))
                 .ContinueWith(t =>
@@ -112,6 +118,7 @@ namespace Finkit.ManicTime.WebClient.Gui
                         {
                             TagCombinations = window.TagCombinations.Split(new[] {"\r\n"}, StringSplitOptions.RemoveEmptyEntries)
                         };
+                        ClearOutput();
                         Output("Sending tag combination list...");
                         SendAsync((client, cancellationToken) => client.PostTagCombinationsAsync(newList, cancellationToken));
                     }
@@ -154,15 +161,6 @@ namespace Finkit.ManicTime.WebClient.Gui
                 CancellationTokenSource.Cancel();
         }
 
-        private void ClearLogButton_OnClick(object sender, RoutedEventArgs e)
-        {
-            Invoke(() =>
-            {
-                OutputTextBox.Clear();
-                ClearLogButton.IsEnabled = false;
-            });
-        }
-
         private void DisposeCanncellationTokenSource()
         {
             if (CancellationTokenSource != null)
@@ -170,6 +168,11 @@ namespace Finkit.ManicTime.WebClient.Gui
                 CancellationTokenSource.Dispose();
                 CancellationTokenSource = null;
             }
+        }
+
+        private void ClearOutput()
+        {
+            Invoke(() => OutputTextBox.Clear());
         }
 
         private void Output(string format, params object[] args)
@@ -180,7 +183,6 @@ namespace Finkit.ManicTime.WebClient.Gui
                     OutputTextBox.AppendText("\r\n");
                 OutputTextBox.AppendText(string.Format(format, args));
                 OutputTextBox.ScrollToEnd();
-                ClearLogButton.IsEnabled = true;
             });
         }
 

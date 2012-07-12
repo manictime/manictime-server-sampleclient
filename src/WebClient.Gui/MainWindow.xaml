@@ -13,8 +13,7 @@
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
         <UniformGrid Rows="1">
-            <Button x:Name="CancelButton" Content="Cancel request" Width="90" Click="CancelButton_OnClick" VerticalAlignment="Center" Margin="1" />
-            <Button x:Name="ClearLogButton" Content="Clear log" Width="90" Click="ClearLogButton_OnClick" IsEnabled="False" VerticalAlignment="Center" Margin="1" />
+            <Button x:Name="CancelButton" Content="Cancel request" Width="150" Click="CancelButton_OnClick" VerticalAlignment="Center" Margin="1" />
         </UniformGrid>
         <Grid Grid.Column="1">
             <Grid.ColumnDefinitions>
