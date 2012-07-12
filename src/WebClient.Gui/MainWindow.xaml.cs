@@ -127,32 +127,41 @@ namespace Finkit.ManicTime.WebClient.Gui
 
         private Task<T> SendAsync<T>(Func<Client, CancellationToken, Task<T>> send) 
         {
-            CancellationTokenSource = new CancellationTokenSource();
-            string url = ServerUrlTextBox.Text;
-            var client = new Client(url);
-            return send(client, CancellationTokenSource.Token)
-                .ContinueWith(t =>
-                {
-                    try
+            try
+            {
+                CancellationTokenSource = new CancellationTokenSource();
+                string url = ServerUrlTextBox.Text;
+                var client = new Client(url);
+                return send(client, CancellationTokenSource.Token)
+                    .ContinueWith(t =>
                     {
-                        if (t.Exception != null)
-                            Output(t.Exception.ToString());
-                        else if (t.Status == TaskStatus.Canceled)
-                            Output("Canceled.");
-                        else
+                        try
                         {
-                            Output("Result received:\r\n{0}", JsonConvert.SerializeObject(t.Result, Formatting.Indented));
-                            return t.Result;
-                        }
+                            if (t.Exception != null)
+                                Output(t.Exception.ToString());
+                            else if (t.Status == TaskStatus.Canceled)
+                                Output("Canceled.");
+                            else
+                            {
+                                Output("Result received:\r\n{0}", JsonConvert.SerializeObject(t.Result, Formatting.Indented));
+                                return t.Result;
+                            }
 
-                    }
-                    finally
-                    {
-                        client.Dispose();
-                        DisposeCanncellationTokenSource();
-                    }
-                    return default(T);
-                });
+                        }
+                        finally
+                        {
+                            client.Dispose();
+                            DisposeCanncellationTokenSource();
+                        }
+                        return default(T);
+                    });
+            }
+            catch (Exception ex)
+            {
+                Output(ex.ToString());
+                DisposeCanncellationTokenSource();
+                return null;
+            }
         }
 
         private void CancelButton_OnClick(object sender, RoutedEventArgs e)
