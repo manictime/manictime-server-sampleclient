@@ -12,29 +12,23 @@
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
-        <Grid Grid.ColumnSpan="2">
+        <UniformGrid Rows="1">
+            <Button x:Name="CancelButton" Content="Cancel request" Width="90" Click="CancelButton_OnClick" VerticalAlignment="Center" Margin="1" />
+            <Button x:Name="ClearLogButton" Content="Clear log" Width="90" Click="ClearLogButton_OnClick" IsEnabled="False" VerticalAlignment="Center" Margin="1" />
+        </UniformGrid>
+        <Grid Grid.Column="1">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition />
-                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             <Label Content="Server url" />
             <TextBox x:Name="ServerUrlTextBox" Grid.Column="1" Text="http://hermes:8080" />
-            <StackPanel Orientation="Horizontal" Grid.Column="2">
-                <Button x:Name="CancelButton" Content="Cancel request" Width="100" Click="CancelButton_OnClick" />
-                <Button x:Name="ClearLogButton" Content="Clear log" Width="100" Click="ClearLogButton_OnClick" IsEnabled="False" />
-            </StackPanel>
         </Grid>
-        <Grid Grid.Row="1" Grid.ColumnSpan="2">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-        </Grid>
-        <StackPanel Grid.Row="1" Width="150" >
-            <Button x:Name="HomeButton" Content="Home" Click="HomeButton_OnClick" />
-            <Button x:Name="TimelinesButton" Content="Timelines" Click="TimelinesButton_OnClick" />
-            <Button x:Name="TagCombinationsButton" Content="Tag combinations" Click="TagCombinationsButton_OnClick" />
+        <StackPanel Grid.Row="1" HorizontalAlignment="Stretch">
+            <Button x:Name="HomeButton" Content="Get home" Click="HomeButton_OnClick" Margin="1" />
+            <Button x:Name="TimelinesButton" Content="Get timelines" Click="TimelinesButton_OnClick" Margin="1" />
+            <Button x:Name="GetTagCombinationsButton" Content="Get tag combinations" Click="GetTagCombinationsButton_OnClick" Margin="1" />
+            <Button x:Name="UpdateTagCombinationsButton" Content="Update tag combinations" Click="UpdateTagCombinationsButton_OnClick" Margin="1" />
         </StackPanel>
         <TextBox x:Name="OutputTextBox" Grid.Row="2" Grid.Column="1" IsReadOnly="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" />
     </Grid>

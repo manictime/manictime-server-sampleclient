@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using Finkit.ManicTime.WebClient.Resources;
 using Newtonsoft.Json;
 
 namespace Finkit.ManicTime.WebClient.Gui
@@ -26,7 +27,8 @@ namespace Finkit.ManicTime.WebClient.Gui
                 ServerUrlTextBox.IsEnabled = CancellationTokenSource == null;
                 HomeButton.IsEnabled = CancellationTokenSource == null;
                 TimelinesButton.IsEnabled = CancellationTokenSource == null;
-                TagCombinationsButton.IsEnabled = CancellationTokenSource == null;
+                GetTagCombinationsButton.IsEnabled = CancellationTokenSource == null;
+                UpdateTagCombinationsButton.IsEnabled = CancellationTokenSource == null;
                 CancelButton.IsEnabled = CancellationTokenSource != null;
             });
         }
@@ -39,28 +41,56 @@ namespace Finkit.ManicTime.WebClient.Gui
 
         private void HomeButton_OnClick(object sender, RoutedEventArgs e)
         {
-            GetAsync((client, cancellationToken) => client.GetHomeAsync(cancellationToken));
+            Output("Getting home...");
+            SendAsync((client, cancellationToken) => client.GetHomeAsync(cancellationToken));
         }
 
         private void TimelinesButton_OnClick(object sender, RoutedEventArgs e)
         {
-            GetAsync((client, cancellationToken) => client.GetTimelinesAsync(cancellationToken));
+            Output("Getting timelines...");
+            SendAsync((client, cancellationToken) => client.GetTimelinesAsync(cancellationToken));
         }
 
-        private void TagCombinationsButton_OnClick(object sender, RoutedEventArgs e)
+        private void GetTagCombinationsButton_OnClick(object sender, RoutedEventArgs e)
         {
-            GetAsync((client, cancellationToken) => client.GetTagCombinationsAsync(cancellationToken));
+            Output("Getting tag combination list...");
+            SendAsync((client, cancellationToken) => client.GetTagCombinationsAsync(cancellationToken));
         }
 
-        private void GetAsync<T>(Func<Client, CancellationToken, Task<T>> get)
+        private void UpdateTagCombinationsButton_OnClick(object sender, RoutedEventArgs e)
         {
-            if (CancellationTokenSource != null)
-                return;
+            Output("Getting tag combination list...");
+            SendAsync((client, cancellationToken) => client.GetTagCombinationsAsync(cancellationToken))
+                .ContinueWith(t =>
+                {
+                    var combinations = t.Result;
+                    if (combinations != null)
+                    {
+                        var window = new TagCombinationsEditWindow
+                        {
+                            Owner = this,
+                            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                            TagCombinations = combinations.TagCombinations == null ? "" : string.Join("\r\n", combinations.TagCombinations)
+                        };
+                        if (window.ShowDialog() == true)
+                        {
+                            var newList = new TagCombinationListResource
+                            {
+                                TagCombinations = window.TagCombinations.Split(new[] {"\r\n"}, StringSplitOptions.RemoveEmptyEntries)
+                            };
+                            Output("Sending tag combination list...");
+                            SendAsync((client, cancellationToken) => client.PostTagCombinationsAsync(newList, cancellationToken));
+                        }
+                    }
+                }, TaskScheduler.FromCurrentSynchronizationContext());
+        }
+
+        private Task<T> SendAsync<T>(Func<Client, CancellationToken, Task<T>> send) 
+        {
             CancellationTokenSource = new CancellationTokenSource();
             string url = ServerUrlTextBox.Text;
-            Output("Getting {0} from {1}...", typeof(T).Name, url);
             var client = new Client(url);
-            get(client, CancellationTokenSource.Token)
+            return send(client, CancellationTokenSource.Token)
                 .ContinueWith(t =>
                 {
                     try
@@ -70,13 +100,18 @@ namespace Finkit.ManicTime.WebClient.Gui
                         else if (t.Status == TaskStatus.Canceled)
                             Output("Canceled.");
                         else
+                        {
                             Output("Result received:\r\n{0}", JsonConvert.SerializeObject(t.Result, Formatting.Indented));
+                            return t.Result;
+                        }
+
                     }
                     finally
                     {
                         client.Dispose();
                         DisposeCanncellationTokenSource();
                     }
+                    return default(T);
                 });
         }
 
@@ -120,7 +155,5 @@ namespace Finkit.ManicTime.WebClient.Gui
         {
             Dispatcher.Invoke(action);
         }
-
-
     }
 }
