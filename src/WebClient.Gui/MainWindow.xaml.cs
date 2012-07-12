@@ -27,6 +27,7 @@ namespace Finkit.ManicTime.WebClient.Gui
                 ServerUrlTextBox.IsEnabled = CancellationTokenSource == null;
                 HomeButton.IsEnabled = CancellationTokenSource == null;
                 TimelinesButton.IsEnabled = CancellationTokenSource == null;
+                GetTimelineButton.IsEnabled = CancellationTokenSource == null;
                 GetTagCombinationsButton.IsEnabled = CancellationTokenSource == null;
                 UpdateTagCombinationsButton.IsEnabled = CancellationTokenSource == null;
                 CancelButton.IsEnabled = CancellationTokenSource != null;
@@ -51,6 +52,35 @@ namespace Finkit.ManicTime.WebClient.Gui
             SendAsync((client, cancellationToken) => client.GetTimelinesAsync(cancellationToken));
         }
 
+        private void GetTimelineButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            Output("Getting timelines...");
+            SendAsync((client, cancellationToken) => client.GetTimelinesAsync(cancellationToken))
+                .ContinueWith(t =>
+                {
+                    TimelinesResource timelines = t.Result;
+                    if (timelines == null)
+                        return;
+                    if (timelines.Timelines == null || timelines.Timelines.Length == 0)
+                    {
+                        Output("No timelines");
+                        return;
+                    }
+                    var window = new TimelinePickerWindow
+                    {
+                        Owner = this,
+                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                        Timelines = timelines.Timelines,
+                        SizeToContent = SizeToContent.WidthAndHeight
+                    };
+                    if (window.ShowDialog() == true)
+                    {
+                        Output("Getting timeline...");
+                        SendAsync((client, cancellationToken) => client.GetTimelineAsync(window.SelectedTimeline.TimelineId, cancellationToken));
+                    }
+                }, TaskScheduler.FromCurrentSynchronizationContext());
+        }
+
         private void GetTagCombinationsButton_OnClick(object sender, RoutedEventArgs e)
         {
             Output("Getting tag combination list...");
@@ -63,24 +93,23 @@ namespace Finkit.ManicTime.WebClient.Gui
             SendAsync((client, cancellationToken) => client.GetTagCombinationsAsync(cancellationToken))
                 .ContinueWith(t =>
                 {
-                    var combinations = t.Result;
-                    if (combinations != null)
+                    TagCombinationListResource combinations = t.Result;
+                    if (combinations == null)
+                        return;
+                    var window = new TagCombinationsEditWindow
                     {
-                        var window = new TagCombinationsEditWindow
+                        Owner = this,
+                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                        TagCombinations = combinations.TagCombinations == null ? "" : string.Join("\r\n", combinations.TagCombinations)
+                    };
+                    if (window.ShowDialog() == true)
+                    {
+                        var newList = new TagCombinationListResource
                         {
-                            Owner = this,
-                            WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                            TagCombinations = combinations.TagCombinations == null ? "" : string.Join("\r\n", combinations.TagCombinations)
+                            TagCombinations = window.TagCombinations.Split(new[] {"\r\n"}, StringSplitOptions.RemoveEmptyEntries)
                         };
-                        if (window.ShowDialog() == true)
-                        {
-                            var newList = new TagCombinationListResource
-                            {
-                                TagCombinations = window.TagCombinations.Split(new[] {"\r\n"}, StringSplitOptions.RemoveEmptyEntries)
-                            };
-                            Output("Sending tag combination list...");
-                            SendAsync((client, cancellationToken) => client.PostTagCombinationsAsync(newList, cancellationToken));
-                        }
+                        Output("Sending tag combination list...");
+                        SendAsync((client, cancellationToken) => client.PostTagCombinationsAsync(newList, cancellationToken));
                     }
                 }, TaskScheduler.FromCurrentSynchronizationContext());
         }

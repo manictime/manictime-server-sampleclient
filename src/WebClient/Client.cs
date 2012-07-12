@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -42,6 +43,23 @@ namespace Finkit.ManicTime.WebClient
                     string timelinesUrl = t.Result == null ? null : t.Result.Links.Url(Relations.Timelines);
                     if (timelinesUrl != null)
                         return GetAsync<TimelinesResource>(timelinesUrl, cancellationToken);
+                    return null;
+                }, cancellationToken)
+                .Unwrap();
+        }
+
+        public Task<TimelineResource> GetTimelineAsync(string timelineId, CancellationToken cancellationToken)
+        {
+            return GetTimelinesAsync(cancellationToken)
+                .ContinueWith(t =>
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    var timeline = t.Result == null || t.Result.Timelines == null
+                        ? null
+                        : t.Result.Timelines.SingleOrDefault(tr => tr.TimelineId == timelineId);
+                    string timelineUrl = timeline == null ? null : timeline.Links.Url(Relations.Self);
+                    if (timelineUrl != null)
+                        return GetAsync<TimelineResource>(timelineUrl, cancellationToken);
                     return null;
                 }, cancellationToken)
                 .Unwrap();
