@@ -122,6 +122,11 @@ namespace Finkit.ManicTime.WebClient
             return ReturnResult<T>(_client.GetAsync(new Uri(url), cancellationToken), cancellationToken);
         }
 
+        public Task<T> PostAsync<T>(string url, object value)
+        {
+            return PostAsync<T>(url, value, CancellationToken.None);
+        }
+
         public Task<T> PostAsync<T>(string url, object value, CancellationToken cancellationToken)
         {
             return ReturnResult<T>(_client.PostAsJsonAsync(url, value, cancellationToken), cancellationToken);
