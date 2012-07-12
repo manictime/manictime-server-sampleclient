@@ -119,24 +119,17 @@ namespace Finkit.ManicTime.WebClient
 
         public Task<T> GetAsync<T>(string url, CancellationToken cancellationToken)
         {
-            return _client
-                .GetAsync(new Uri(url), cancellationToken)
-                .ContinueWith(t =>
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-                    t.Result.EnsureSuccessStatusCode();
-                    return t.Result.Content
-                        .ReadAsAsync<T>()
-                        .ContinueWith(t1 => t1.Result, cancellationToken);
-                }, cancellationToken)
-                .Unwrap();
+            return ReturnResult<T>(_client.GetAsync(new Uri(url), cancellationToken), cancellationToken);
         }
 
         public Task<T> PostAsync<T>(string url, object value, CancellationToken cancellationToken)
         {
-            return _client
-                .PostAsJsonAsync(url, value, cancellationToken)
-                .ContinueWith(t =>
+            return ReturnResult<T>(_client.PostAsJsonAsync(url, value, cancellationToken), cancellationToken);
+        }
+
+        private Task<T> ReturnResult<T>(Task<HttpResponseMessage> responseMessage, CancellationToken cancellationToken)
+        {
+            return responseMessage.ContinueWith(t =>
                 {
                     cancellationToken.ThrowIfCancellationRequested();
                     t.Result.EnsureSuccessStatusCode();
