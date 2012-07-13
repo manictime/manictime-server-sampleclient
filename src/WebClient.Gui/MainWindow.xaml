@@ -24,6 +24,7 @@
             <TextBox x:Name="ServerUrlTextBox" Grid.Column="1" Text="http://hermes:8080" />
         </Grid>
         <StackPanel Grid.Row="1" HorizontalAlignment="Stretch">
+            <Button x:Name="SettingsButton" Content="Settings..." Click="SettingsButton_OnClick" Margin="1" />
             <Button x:Name="HomeButton" Content="Get home" Click="HomeButton_OnClick" Margin="1" />
             <Button x:Name="TimelinesButton" Content="Get timelines" Click="TimelinesButton_OnClick" Margin="1" />
             <Button x:Name="GetActivitiesButton" Content="Get activities" Click="GetActivitiesButton_OnClick" Margin="1" />

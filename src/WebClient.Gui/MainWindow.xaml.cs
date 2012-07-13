@@ -10,6 +10,8 @@ namespace Finkit.ManicTime.WebClient.Gui
 {
     public partial class MainWindow
     {
+        private ClientSettings _clientSettings = new ClientSettings();
+
         private CancellationTokenSource _cancellationTokenSource;
         private CancellationTokenSource CancellationTokenSource
         {
@@ -131,7 +133,7 @@ namespace Finkit.ManicTime.WebClient.Gui
             {
                 CancellationTokenSource = new CancellationTokenSource();
                 string url = ServerUrlTextBox.Text;
-                var client = new Client(url);
+                var client = new Client(url, _clientSettings);
                 return send(client, CancellationTokenSource.Token)
                     .ContinueWith(t =>
                     {
@@ -168,6 +170,11 @@ namespace Finkit.ManicTime.WebClient.Gui
         {
             if (CancellationTokenSource != null)
                 CancellationTokenSource.Cancel();
+        }
+
+        private void SettingsButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            _clientSettings = SettingsWindow.Show(this, _clientSettings) ?? _clientSettings;
         }
 
         private void DisposeCanncellationTokenSource()

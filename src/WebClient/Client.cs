@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Formatting;
+using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -10,12 +13,35 @@ namespace Finkit.ManicTime.WebClient
 {
     public class Client : IDisposable
     {
+        private static readonly Dictionary<string, MediaTypeFormatter> SupportedMediaTypeFormatters = new Dictionary<string, MediaTypeFormatter>
+        {
+            { MediaTypes.ApplicationJson, new JsonMediaTypeFormatter() }, 
+            { MediaTypes.ApplicationXml, new XmlMediaTypeFormatter { UseXmlSerializer = true } }
+        };
+
+        private ClientSettings _clientSettings;
+        public ClientSettings ClientSettings
+        {
+            get { return _clientSettings; }
+            set
+            {
+                if (value == null)
+                    throw new ArgumentNullException("value");
+                _clientSettings = value;
+            }
+        }
+
         private readonly string _serverUrl;
         private readonly HttpClient _client;
 
-        public Client(string serverUrl)
+        public Client(string serverUrl) : this(serverUrl, new ClientSettings())
+        {
+        }
+
+        public Client(string serverUrl, ClientSettings clientSettings)
         {
             _serverUrl = serverUrl;
+            ClientSettings = clientSettings;
             _client = new HttpClient(new HttpClientHandler { UseDefaultCredentials = true, PreAuthenticate = true });
         }
 
@@ -119,7 +145,7 @@ namespace Finkit.ManicTime.WebClient
 
         public Task<T> GetAsync<T>(string url, CancellationToken cancellationToken)
         {
-            return ReturnResult<T>(_client.GetAsync(new Uri(url), cancellationToken), cancellationToken);
+            return SendAsync<T>(url, HttpMethod.Get, null, cancellationToken);
         }
 
         public Task<T> PostAsync<T>(string url, object value)
@@ -129,17 +155,26 @@ namespace Finkit.ManicTime.WebClient
 
         public Task<T> PostAsync<T>(string url, object value, CancellationToken cancellationToken)
         {
-            return ReturnResult<T>(_client.PostAsJsonAsync(url, value, cancellationToken), cancellationToken);
+            return SendAsync<T>(url, HttpMethod.Post, value, cancellationToken);
         }
 
-        private Task<T> ReturnResult<T>(Task<HttpResponseMessage> responseMessage, CancellationToken cancellationToken)
+        private Task<T> SendAsync<T>(string url, HttpMethod method, object value, CancellationToken cancellationToken)
         {
-            return responseMessage.ContinueWith(t =>
+            MediaTypeFormatter mediaTypeFormatter;
+            if (!SupportedMediaTypeFormatters.TryGetValue(ClientSettings.MediaType, out mediaTypeFormatter))
+                throw new InvalidOperationException("Media type not supported: " + ClientSettings.MediaType);
+            var request = new HttpRequestMessage(method, url)
+            {
+                Content = value == null ? null : new ObjectContent(value.GetType(), value, mediaTypeFormatter)
+            };
+            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(ClientSettings.MediaType));
+            return _client.SendAsync(request, cancellationToken)
+                .ContinueWith(t =>
                 {
                     cancellationToken.ThrowIfCancellationRequested();
                     t.Result.EnsureSuccessStatusCode();
                     return t.Result.Content
-                        .ReadAsAsync<T>()
+                        .ReadAsAsync<T>(SupportedMediaTypeFormatters.Values.ToArray())
                         .ContinueWith(t1 => t1.Result, cancellationToken);
                 }, cancellationToken)
                 .Unwrap();

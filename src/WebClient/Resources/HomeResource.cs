@@ -5,7 +5,7 @@ using System.Xml.Serialization;
 namespace Finkit.ManicTime.WebClient.Resources
 {
     [Serializable]
-    [XmlRoot("home")]
+    [XmlRoot("home", Namespace = "")]
     [DataContract(Name = "home")]
     public class HomeResource
     {
