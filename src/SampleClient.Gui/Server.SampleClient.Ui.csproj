@@ -9,7 +9,7 @@
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Finkit.ManicTime.Server.SampleClient.Ui</RootNamespace>
-    <AssemblyName>Finkit.ManicTime.Server.SampleClient.Ui</AssemblyName>
+    <AssemblyName>SampleClient</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
