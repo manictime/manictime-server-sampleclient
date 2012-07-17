@@ -58,7 +58,7 @@ namespace Finkit.ManicTime.WebClient.Resources
         public bool ShouldSerializeUpdatedAfterTimestamp() { return UpdatedAfterTimestamp.HasValue; }
 
         [XmlArray("activities")]
-        [XmlArrayItem("activities")]
+        [XmlArrayItem("activity")]
         [DataMember(Name = "activities")]
         public ActivityResource[] Activities { get; set; }
 
