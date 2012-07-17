@@ -28,6 +28,7 @@ namespace Finkit.ManicTime.WebClient.Gui
             Invoke(() =>
             {
                 ServerUrlTextBox.IsEnabled = CancellationTokenSource == null;
+                SettingsButton.IsEnabled = CancellationTokenSource == null;
                 HomeButton.IsEnabled = CancellationTokenSource == null;
                 TimelinesButton.IsEnabled = CancellationTokenSource == null;
                 GetActivitiesButton.IsEnabled = CancellationTokenSource == null;
