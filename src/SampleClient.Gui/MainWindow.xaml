@@ -21,7 +21,7 @@
                 <ColumnDefinition />
             </Grid.ColumnDefinitions>
             <Label Content="Server url" />
-            <TextBox x:Name="ServerUrlTextBox" Grid.Column="1" Text="http://hermes:8080" />
+            <TextBox x:Name="ServerUrlTextBox" Grid.Column="1" Text="http://" />
         </Grid>
         <StackPanel Grid.Row="1" HorizontalAlignment="Stretch">
             <Button x:Name="SettingsButton" Content="Settings..." Click="SettingsButton_OnClick" Margin="1" />
