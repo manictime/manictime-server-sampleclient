@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 
-namespace Finkit.ManicTime.WebClient.Resources
+namespace Finkit.ManicTime.Server.SampleClient.Resources
 {
     public static class LinkResourceExtensions
     {

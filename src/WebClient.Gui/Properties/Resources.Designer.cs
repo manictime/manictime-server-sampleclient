@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Finkit.ManicTime.WebClient.Gui.Properties {
+namespace Finkit.ManicTime.Server.SampleClient.Ui.Properties {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace Finkit.ManicTime.WebClient.Gui.Properties {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Finkit.ManicTime.WebClient.Gui.Properties.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Finkit.ManicTime.Server.SampleClient.Ui.Properties.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;

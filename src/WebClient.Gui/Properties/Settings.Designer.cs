@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Finkit.ManicTime.WebClient.Gui.Properties {
+namespace Finkit.ManicTime.Server.SampleClient.Ui.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]

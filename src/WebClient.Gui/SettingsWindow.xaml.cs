@@ -1,6 +1,6 @@
 ﻿using System.Windows;
 
-namespace Finkit.ManicTime.WebClient.Gui
+namespace Finkit.ManicTime.Server.SampleClient.Ui
 {
     public partial class SettingsWindow
     {

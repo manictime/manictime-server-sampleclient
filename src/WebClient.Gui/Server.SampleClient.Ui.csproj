@@ -8,8 +8,8 @@
     <ProjectGuid>{6B6A5A26-4611-4E7A-8EF2-E415281C9C25}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Finkit.ManicTime.WebClient.Gui</RootNamespace>
-    <AssemblyName>Finkit.ManicTime.WebClient.Gui</AssemblyName>
+    <RootNamespace>Finkit.ManicTime.Server.SampleClient.Ui</RootNamespace>
+    <AssemblyName>Finkit.ManicTime.Server.SampleClient.Ui</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
@@ -120,9 +120,9 @@
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\WebClient\WebClient.csproj">
+    <ProjectReference Include="..\WebClient\Server.SampleClient.csproj">
       <Project>{08769FED-0703-4D22-B88B-60D5869463CF}</Project>
-      <Name>WebClient</Name>
+      <Name>Server.SampleClient</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

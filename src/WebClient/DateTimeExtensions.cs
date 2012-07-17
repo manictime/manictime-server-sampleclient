@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Globalization;
 
-namespace Finkit.ManicTime.WebClient
+namespace Finkit.ManicTime.Server.SampleClient
 {
     public static class DateTimeExtensions
     {

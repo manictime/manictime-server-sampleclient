@@ -6,10 +6,9 @@ using System.Net.Http.Formatting;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
+using Finkit.ManicTime.Server.SampleClient.Resources;
 
-using Finkit.ManicTime.WebClient.Resources;
-
-namespace Finkit.ManicTime.WebClient
+namespace Finkit.ManicTime.Server.SampleClient
 {
     public class Client : IDisposable
     {

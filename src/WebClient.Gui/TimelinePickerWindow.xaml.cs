@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Windows;
-using Finkit.ManicTime.WebClient.Resources;
+using Finkit.ManicTime.Server.SampleClient.Resources;
 
-namespace Finkit.ManicTime.WebClient.Gui
+namespace Finkit.ManicTime.Server.SampleClient.Ui
 {
     public partial class TimelinePickerWindow
     {

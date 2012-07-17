@@ -1,4 +1,4 @@
-﻿<Window x:Class="Finkit.ManicTime.WebClient.Gui.TimelinePickerWindow"
+﻿<Window x:Class="Finkit.ManicTime.Server.SampleClient.Ui.TimelinePickerWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Get activities" Name="ThisWindow" ResizeMode="NoResize">

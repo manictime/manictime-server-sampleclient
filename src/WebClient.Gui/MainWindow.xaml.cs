@@ -3,10 +3,10 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using Finkit.ManicTime.WebClient.Resources;
+using Finkit.ManicTime.Server.SampleClient.Resources;
 using Newtonsoft.Json;
 
-namespace Finkit.ManicTime.WebClient.Gui
+namespace Finkit.ManicTime.Server.SampleClient.Ui
 {
     public partial class MainWindow
     {

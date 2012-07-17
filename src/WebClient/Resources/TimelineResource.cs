@@ -2,7 +2,7 @@
 using System.Runtime.Serialization;
 using System.Xml.Serialization;
 
-namespace Finkit.ManicTime.WebClient.Resources
+namespace Finkit.ManicTime.Server.SampleClient.Resources
 {
     [Serializable]
     [XmlRoot("timeline")]
