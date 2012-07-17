@@ -12,7 +12,7 @@
 
         public ClientSettings()
         {
-            MediaType = MediaTypes.ApplicationXml;
+            MediaType = MediaTypes.ApplicationJson;
         }
     }
 }
