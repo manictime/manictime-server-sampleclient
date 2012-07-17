@@ -12,6 +12,17 @@ namespace Finkit.ManicTime.WebClient.Gui
     {
         private ClientSettings _clientSettings = new ClientSettings();
 
+        private string _updatedActivitiesUrl;
+        private string UpdatedActivitiesUrl
+        {
+            get { return _updatedActivitiesUrl; }
+            set
+            {
+                _updatedActivitiesUrl = value;
+                EnableControls();
+            }
+        }
+
         private CancellationTokenSource _cancellationTokenSource;
         private CancellationTokenSource CancellationTokenSource
         {
@@ -32,6 +43,7 @@ namespace Finkit.ManicTime.WebClient.Gui
                 HomeButton.IsEnabled = CancellationTokenSource == null;
                 TimelinesButton.IsEnabled = CancellationTokenSource == null;
                 GetActivitiesButton.IsEnabled = CancellationTokenSource == null;
+                GetUpdatedActivitiesButton.IsEnabled = CancellationTokenSource == null && !string.IsNullOrEmpty(UpdatedActivitiesUrl);
                 GetTagCombinationsButton.IsEnabled = CancellationTokenSource == null;
                 UpdateTagCombinationsButton.IsEnabled = CancellationTokenSource == null;
                 CancelButton.IsEnabled = CancellationTokenSource != null;
@@ -87,9 +99,27 @@ namespace Finkit.ManicTime.WebClient.Gui
                     {
                         ClearOutput();
                         Output("Getting activities...");
-                        SendAsync((client, cancellationToken) => client.GetActivitiesByTimelineIdAsync(window.SelectedTimeline.TimelineId, window.FromTime.Value, window.ToTime.Value.AddDays(1), cancellationToken));
+                        SendAsync(
+                            (client, cancellationToken) =>
+                                client.GetActivitiesByTimelineIdAsync(window.SelectedTimeline.TimelineId, window.FromTime.Value,
+                                                                      window.ToTime.Value.AddDays(1), cancellationToken))
+                            .ContinueWith(t1 => RefreshUpdatedActivitiesUrl(t1.Result), TaskScheduler.FromCurrentSynchronizationContext());
                     }
                 }, TaskScheduler.FromCurrentSynchronizationContext());
+        }
+
+        private void GetUpdatedActivitiesButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            ClearOutput();
+            Output("Getting updated activities...");
+            SendAsync((client, cancellationToken) => client.GetUpdatedActivities(_updatedActivitiesUrl, cancellationToken))
+                .ContinueWith(t => RefreshUpdatedActivitiesUrl(t.Result));
+
+        }
+
+        private void RefreshUpdatedActivitiesUrl(TimelineResource result)
+        {
+            UpdatedActivitiesUrl = result == null ? null : result.Links.Url(Relations.UpdatedActivities);
         }
 
         private void GetTagCombinationsButton_OnClick(object sender, RoutedEventArgs e)

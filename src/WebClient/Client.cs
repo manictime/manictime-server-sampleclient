@@ -110,6 +110,16 @@ namespace Finkit.ManicTime.WebClient
             return GetAsync<TimelineResource>(url, cancellationToken);
         }
 
+        public Task<TimelineResource> GetUpdatedActivities(string updatedActivitiesUrl)
+        {
+            return GetAsync<TimelineResource>(updatedActivitiesUrl, CancellationToken.None);
+        }
+
+        public Task<TimelineResource> GetUpdatedActivities(string updatedActivitiesUrl, CancellationToken cancellationToken)
+        {
+            return GetAsync<TimelineResource>(updatedActivitiesUrl, cancellationToken);
+        }
+
         public Task<TagCombinationListResource> GetTagCombinationsAsync(CancellationToken cancellationToken)
         {
             return GetHomeAsync(cancellationToken)
