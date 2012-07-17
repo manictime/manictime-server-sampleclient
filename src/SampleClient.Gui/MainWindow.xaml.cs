@@ -237,5 +237,11 @@ namespace Finkit.ManicTime.Server.SampleClient.Ui
         {
             Dispatcher.Invoke(action);
         }
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            ServerUrlTextBox.Focus();
+            ServerUrlTextBox.CaretIndex = ServerUrlTextBox.Text.Length;
+        }
     }
 }
