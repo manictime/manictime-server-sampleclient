@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Server.SampleClient", "WebClient\Server.SampleClient.csproj", "{08769FED-0703-4D22-B88B-60D5869463CF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Server.SampleClient", "src\SampleClient\Server.SampleClient.csproj", "{08769FED-0703-4D22-B88B-60D5869463CF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Server.SampleClient.Ui", "WebClient.Gui\Server.SampleClient.Ui.csproj", "{6B6A5A26-4611-4E7A-8EF2-E415281C9C25}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Server.SampleClient.Ui", "src\SampleClient.Gui\Server.SampleClient.Ui.csproj", "{6B6A5A26-4611-4E7A-8EF2-E415281C9C25}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{CBE4DD79-75A8-4C77-9A61-33AC79E9B90C}"
 	ProjectSection(SolutionItems) = preProject
