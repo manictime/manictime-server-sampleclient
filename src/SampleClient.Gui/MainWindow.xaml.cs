@@ -176,7 +176,9 @@ namespace Finkit.ManicTime.Server.SampleClient.Ui
                                 Output("Canceled.");
                             else
                             {
-                                Output("Result received:\r\n{0}", JsonConvert.SerializeObject(t.Result, Formatting.Indented));
+                                Output("Result received:\r\n{0}", _clientSettings.MediaType == MediaTypes.ApplicationJson 
+                                    ? ResultFormatter.FormatAsJson(t.Result)
+                                    : ResultFormatter.FormatAsXml(t.Result));
                                 return t.Result;
                             }
 
