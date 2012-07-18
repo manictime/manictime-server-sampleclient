@@ -18,17 +18,7 @@ namespace Finkit.ManicTime.Server.SampleClient
             { MediaTypes.ApplicationXml, new XmlMediaTypeFormatter { UseXmlSerializer = true } }
         };
 
-        private ClientSettings _clientSettings;
-        public ClientSettings ClientSettings
-        {
-            get { return _clientSettings; }
-            set
-            {
-                if (value == null)
-                    throw new ArgumentNullException("value");
-                _clientSettings = value;
-            }
-        }
+        public ClientSettings ClientSettings { get; private set; }
 
         private readonly string _serverUrl;
         private readonly HttpClient _client;
@@ -41,7 +31,12 @@ namespace Finkit.ManicTime.Server.SampleClient
         {
             _serverUrl = serverUrl;
             ClientSettings = clientSettings;
-            _client = new HttpClient(new HttpClientHandler { UseDefaultCredentials = true, PreAuthenticate = true });
+            _client = new HttpClient(new HttpClientHandler
+            {
+                PreAuthenticate = true,
+                Credentials = clientSettings.Credentials,
+                UseDefaultCredentials = clientSettings.Credentials == null
+            });
         }
 
         public Task<HomeResource> GetHomeAsync()

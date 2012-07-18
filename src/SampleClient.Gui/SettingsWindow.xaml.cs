@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System.Net;
+using System.Windows;
 
 namespace Finkit.ManicTime.Server.SampleClient.Ui
 {
@@ -15,12 +16,13 @@ namespace Finkit.ManicTime.Server.SampleClient.Ui
         {
             var window = new SettingsWindow
             {
-                Owner = owner, 
-                WindowStartupLocation = WindowStartupLocation.CenterOwner, 
+                Owner = owner,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 ResizeMode = ResizeMode.NoResize,
-                SizeToContent = SizeToContent.WidthAndHeight
+                SizeToContent = SizeToContent.WidthAndHeight,
+                _clientSettings = clientSettings
             };
-            window.UpdateForm(clientSettings);
+            window.UpdateForm();
             return window.ShowDialog() == true ? window._clientSettings : null;
         }
 
@@ -39,22 +41,32 @@ namespace Finkit.ManicTime.Server.SampleClient.Ui
             Close();
         }
 
-        private void UpdateForm(ClientSettings clientSettings)
+        private void UpdateForm()
         {
-            if (clientSettings.MediaType == MediaTypes.ApplicationJson)
+            if (_clientSettings.MediaType == MediaTypes.ApplicationJson)
                 JsonMessageFormatRadioButton.IsChecked = true;
             else
                 XmlMessageFormatRadioButton.IsChecked = true;
+            if (_clientSettings.Credentials == null)
+            {
+                CurrentUserRadioButton.IsChecked = true;
+            }
+            else
+            {
+                FollowingUserRadioButton.IsChecked = true;
+                UsernameTextBox.Text = _clientSettings.Credentials.UserName;
+                PasswordTextBox.Password = _clientSettings.Credentials.Password;
+                DomainTextBox.Text = _clientSettings.Credentials.Domain;
+            }
         }
 
         private void UpdateSettings()
         {
-            _clientSettings = new ClientSettings
-            {
-                MediaType = JsonMessageFormatRadioButton.IsChecked == true
-                    ? MediaTypes.ApplicationJson
-                    : MediaTypes.ApplicationXml
-            };
+            _clientSettings = new ClientSettings(
+                JsonMessageFormatRadioButton.IsChecked == true ? MediaTypes.ApplicationJson : MediaTypes.ApplicationXml,
+                CurrentUserRadioButton.IsChecked == true
+                    ? null
+                    : new NetworkCredential(UsernameTextBox.Text, PasswordTextBox.Password, DomainTextBox.Text));
         }
     }
 }
