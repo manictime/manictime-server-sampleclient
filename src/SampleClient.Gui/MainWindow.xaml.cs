@@ -74,8 +74,12 @@ namespace Finkit.ManicTime.Server.SampleClient.Ui
         {
             ClearOutput();
             Output("Getting timelines...");
-            SendAsync((client, cancellationToken) => client.GetTimelinesAsync(cancellationToken))
-                .ContinueWith(t =>
+            Task<TimelinesResource> task = SendAsync((client, cancellationToken) => client.GetTimelinesAsync(cancellationToken));
+
+            if (task == null)
+                return;
+
+            task.ContinueWith(t =>
                 {
                     TimelinesResource timelines = t.Result;
                     if (timelines == null)
@@ -133,8 +137,11 @@ namespace Finkit.ManicTime.Server.SampleClient.Ui
         {
             ClearOutput();
             Output("Getting tag combination list...");
-            SendAsync((client, cancellationToken) => client.GetTagCombinationsAsync(cancellationToken))
-                .ContinueWith(t =>
+            Task<TagCombinationListResource> task = SendAsync((client, cancellationToken) => client.GetTagCombinationsAsync(cancellationToken));
+
+            if (task == null)
+                return;
+            task.ContinueWith(t =>
                 {
                     TagCombinationListResource combinations = t.Result;
                     if (combinations == null)
