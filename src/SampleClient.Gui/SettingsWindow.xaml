@@ -7,13 +7,43 @@
             <RowDefinition />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        
-        <GroupBox Header="Message format">
-            <StackPanel Orientation="Horizontal">
-                <RadioButton x:Name="JsonMessageFormatRadioButton" Content="JSON" Margin="3" />
-                <RadioButton x:Name="XmlMessageFormatRadioButton" Content="XML" Margin="3" />
-            </StackPanel>
-        </GroupBox>
+
+        <StackPanel Orientation="Vertical">
+            <GroupBox Header="Message format">
+                <StackPanel Orientation="Horizontal">
+                    <RadioButton x:Name="JsonMessageFormatRadioButton" Content="JSON" Margin="3" />
+                    <RadioButton x:Name="XmlMessageFormatRadioButton" Content="XML" Margin="3" />
+                </StackPanel>
+            </GroupBox>
+            <GroupBox Header="Logon as" Width="200">
+                <StackPanel>
+                    <RadioButton x:Name="CurrentUserRadioButton" Margin="0 5 0 5" GroupName="userType" Content="Current user" />
+                    <RadioButton x:Name="FollowingUserRadioButton" GroupName="userType" Content="Following user" />
+                    <StackPanel Margin="20 0 0 0">
+                        <StackPanel.Style>
+                            <Style TargetType="{x:Type StackPanel}">
+                                <Setter Property="IsEnabled" Value="False" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ElementName=FollowingUserRadioButton, Path=IsChecked}" Value="True">
+                                        <Setter Property="IsEnabled" Value="True"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
+                        
+                        <TextBlock Text="Username" Margin="0 5 0 0"></TextBlock>
+                        <TextBox x:Name="UsernameTextBox" />
+
+                        <TextBlock Text="Password" Margin="0 5 0 0"></TextBlock>
+                        <PasswordBox x:Name="PasswordTextBox" />
+
+                        <TextBlock Text="Domain" Margin="0 5 0 0"></TextBlock>
+                        <TextBox x:Name="DomainTextBox" />
+                    </StackPanel>
+                </StackPanel>
+
+            </GroupBox>
+        </StackPanel>
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right">
             <Button x:Name="OkButton" Content="Ok" Width="100" IsDefault="True" Click="OkButton_Click" Margin="1" />
             <Button x:Name="CancelButton" Content="Cancel" Width="100" IsCancel="True" Click="CancelButton_Click" Margin="1" />
