@@ -147,22 +147,22 @@ namespace Finkit.ManicTime.Server.SampleClient
                 .Unwrap();
         }
 
-        public Task<T> GetAsync<T>(string url)
+        private Task<T> GetAsync<T>(string url)
         {
             return GetAsync<T>(url, CancellationToken.None);
         }
 
-        public Task<T> GetAsync<T>(string url, CancellationToken cancellationToken)
+        private Task<T> GetAsync<T>(string url, CancellationToken cancellationToken)
         {
             return SendAsync<T>(url, HttpMethod.Get, null, cancellationToken);
         }
 
-        public Task<T> PostAsync<T>(string url, object value)
+        private Task<T> PostAsync<T>(string url, object value)
         {
             return PostAsync<T>(url, value, CancellationToken.None);
         }
 
-        public Task<T> PostAsync<T>(string url, object value, CancellationToken cancellationToken)
+        private Task<T> PostAsync<T>(string url, object value, CancellationToken cancellationToken)
         {
             return SendAsync<T>(url, HttpMethod.Post, value, cancellationToken);
         }

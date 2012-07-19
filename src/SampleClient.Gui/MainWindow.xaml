@@ -7,25 +7,21 @@
         
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="5" />
             <RowDefinition />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
-        <UniformGrid Rows="1">
-            <Button x:Name="CancelButton" Content="Cancel request" Width="150" Click="CancelButton_OnClick" VerticalAlignment="Center" Margin="1" />
-        </UniformGrid>
-        <Grid Grid.Column="1">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition />
-            </Grid.ColumnDefinitions>
-            <Label Content="Server url" />
-            <TextBox x:Name="ServerUrlTextBox" Grid.Column="1" Text="http://" />
-        </Grid>
-        <StackPanel Grid.Row="1" HorizontalAlignment="Stretch">
-            <Button x:Name="SettingsButton" Content="Settings..." Click="SettingsButton_OnClick" Margin="1" />
+        <Label Content="Server url" HorizontalAlignment="Right" Margin="0 0 5 0" />
+        <DockPanel Grid.Column="1">
+            <Button DockPanel.Dock="Right" x:Name="SettingsButton" Content="Settings..." Click="SettingsButton_OnClick" Padding="5 0 5 0" />
+            <Button DockPanel.Dock="Right" x:Name="CancelButton" Content="Cancel request" Click="CancelButton_OnClick" Margin="5 0 5 0" Padding="5 0 5 0" />
+            <TextBox x:Name="ServerUrlTextBox" Text="http://" />
+        </DockPanel>
+        
+        <StackPanel Grid.Row="2" HorizontalAlignment="Stretch">
             <Button x:Name="HomeButton" Content="Get home" Click="HomeButton_OnClick" Margin="1" />
             <Button x:Name="TimelinesButton" Content="Get timelines" Click="TimelinesButton_OnClick" Margin="1" />
             <Button x:Name="GetActivitiesButton" Content="Get activities" Click="GetActivitiesButton_OnClick" Margin="1" />
