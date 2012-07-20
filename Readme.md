@@ -1,3 +1,5 @@
+This is a sample client for ManicTimeServer. It shows how you can connect to the server, as well as how you can send and receive data.
+
 How to run
 ---------------------
 To run the sample you need Visual studio 2010 or later, with Nuget installed.
