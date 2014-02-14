@@ -4,7 +4,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using Finkit.ManicTime.Server.SampleClient.Resources;
-using Newtonsoft.Json;
 
 namespace Finkit.ManicTime.Server.SampleClient.Ui
 {
@@ -56,69 +55,60 @@ namespace Finkit.ManicTime.Server.SampleClient.Ui
             EnableControls();
         }
 
-        private void HomeButton_OnClick(object sender, RoutedEventArgs e)
+        private async void HomeButton_OnClick(object sender, RoutedEventArgs e)
         {
             ClearOutput();
             Output("Getting home...");
-            SendAsync((client, cancellationToken) => client.GetHomeAsync(cancellationToken));
+            await ExecuteAsync((client, cancellationToken) => client.GetHomeAsync(cancellationToken));
         }
 
-        private void TimelinesButton_OnClick(object sender, RoutedEventArgs e)
+        private async void TimelinesButton_OnClick(object sender, RoutedEventArgs e)
         {
             ClearOutput();
             Output("Getting timelines...");
-            SendAsync((client, cancellationToken) => client.GetTimelinesAsync(cancellationToken));
+            await ExecuteAsync((client, cancellationToken) => client.GetTimelinesAsync(cancellationToken));
         }
 
-        private void GetActivitiesButton_OnClick(object sender, RoutedEventArgs e)
+        private async void GetActivitiesButton_OnClick(object sender, RoutedEventArgs e)
         {
             ClearOutput();
             Output("Getting timelines...");
-            Task<TimelinesResource> task = SendAsync((client, cancellationToken) => client.GetTimelinesAsync(cancellationToken));
+            TimelinesResource timelines = await ExecuteAsync((client, cancellationToken) => client.GetTimelinesAsync(cancellationToken));
 
-            if (task == null)
+            if (timelines == null)
                 return;
-
-            task.ContinueWith(t =>
-                {
-                    TimelinesResource timelines = t.Result;
-                    if (timelines == null)
-                        return;
-                    if (timelines.Timelines == null || timelines.Timelines.Length == 0)
-                    {
-                        Output("No timelines");
-                        return;
-                    }
-                    var window = new TimelinePickerWindow
-                    {
-                        Owner = this,
-                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                        Timelines = timelines.Timelines,
-                        SelectedTimeline = timelines.Timelines.FirstOrDefault(),
-                        FromTime = DateTime.Today,
-                        ToTime = DateTime.Today,
-                        SizeToContent = SizeToContent.WidthAndHeight
-                    };
-                    if (window.ShowDialog() == true)
-                    {
-                        ClearOutput();
-                        Output("Getting activities...");
-                        SendAsync(
-                            (client, cancellationToken) =>
-                                client.GetActivitiesByTimelineIdAsync(window.SelectedTimeline.TimelineId, window.FromTime.Value,
-                                                                      window.ToTime.Value.AddDays(1), cancellationToken))
-                            .ContinueWith(t1 => RefreshUpdatedActivitiesUrl(t1.Result), TaskScheduler.FromCurrentSynchronizationContext());
-                    }
-                }, TaskScheduler.FromCurrentSynchronizationContext());
+            if (timelines.Timelines == null || timelines.Timelines.Length == 0)
+            {
+                Output("No timelines");
+                return;
+            }
+            var window = new TimelinePickerWindow
+            {
+                Owner = this,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                Timelines = timelines.Timelines,
+                SelectedTimeline = timelines.Timelines.FirstOrDefault(),
+                FromTime = DateTime.Today,
+                ToTime = DateTime.Today,
+                SizeToContent = SizeToContent.WidthAndHeight
+            };
+            if (window.ShowDialog() == true && window.FromTime != null && window.ToTime != null)
+            {
+                ClearOutput();
+                Output("Getting activities...");
+                TimelineResource timeline = await ExecuteAsync((client, cancellationToken) => client.GetActivitiesByTimelineIdAsync(
+                    window.SelectedTimeline.TimelineId, window.FromTime.Value, window.ToTime.Value.AddDays(1), cancellationToken));
+                RefreshUpdatedActivitiesUrl(timeline);
+            }
         }
 
-        private void GetUpdatedActivitiesButton_OnClick(object sender, RoutedEventArgs e)
+        private async void GetUpdatedActivitiesButton_OnClick(object sender, RoutedEventArgs e)
         {
             ClearOutput();
             Output("Getting updated activities...");
-            SendAsync((client, cancellationToken) => client.GetUpdatedActivities(_updatedActivitiesUrl, cancellationToken))
-                .ContinueWith(t => RefreshUpdatedActivitiesUrl(t.Result));
-
+            TimelineResource timeline = 
+                await ExecuteAsync((client, cancellationToken) => client.GetUpdatedActivitiesAsync(_updatedActivitiesUrl, cancellationToken));
+            RefreshUpdatedActivitiesUrl(timeline);
         }
 
         private void RefreshUpdatedActivitiesUrl(TimelineResource result)
@@ -126,90 +116,80 @@ namespace Finkit.ManicTime.Server.SampleClient.Ui
             UpdatedActivitiesUrl = result == null ? null : result.Links.Url(Relations.UpdatedActivities);
         }
 
-        private void GetTagCombinationsButton_OnClick(object sender, RoutedEventArgs e)
+        private async void GetTagCombinationsButton_OnClick(object sender, RoutedEventArgs e)
         {
             ClearOutput();
             Output("Getting tag combination list...");
-            SendAsync((client, cancellationToken) => client.GetTagCombinationsAsync(cancellationToken));
+            await ExecuteAsync((client, cancellationToken) => client.GetTagCombinationsAsync(cancellationToken));
         }
 
-        private void UpdateTagCombinationsButton_OnClick(object sender, RoutedEventArgs e)
+        private async void UpdateTagCombinationsButton_OnClick(object sender, RoutedEventArgs e)
         {
             ClearOutput();
             Output("Getting tag combination list...");
-            Task<TagCombinationListResource> task = SendAsync((client, cancellationToken) => client.GetTagCombinationsAsync(cancellationToken));
+            TagCombinationListResource combinations = 
+                await ExecuteAsync((client, cancellationToken) => client.GetTagCombinationsAsync(cancellationToken));
 
-            if (task == null)
+            if (combinations == null)
                 return;
-            task.ContinueWith(t =>
+            var window = new TagCombinationsEditWindow
+            {
+                Owner = this,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                TagCombinations = combinations.TagCombinations == null ? "" : string.Join("\r\n", combinations.TagCombinations)
+            };
+            if (window.ShowDialog() == true)
+            {
+                var newList = new TagCombinationListResource
                 {
-                    TagCombinationListResource combinations = t.Result;
-                    if (combinations == null)
-                        return;
-                    var window = new TagCombinationsEditWindow
-                    {
-                        Owner = this,
-                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                        TagCombinations = combinations.TagCombinations == null ? "" : string.Join("\r\n", combinations.TagCombinations)
-                    };
-                    if (window.ShowDialog() == true)
-                    {
-                        var newList = new TagCombinationListResource
-                        {
-                            TagCombinations = window.TagCombinations.Split(new[] {"\r\n"}, StringSplitOptions.RemoveEmptyEntries)
-                        };
-                        ClearOutput();
-                        Output("Sending tag combination list...");
-                        SendAsync((client, cancellationToken) => client.PostTagCombinationsAsync(newList, cancellationToken));
-                    }
-                }, TaskScheduler.FromCurrentSynchronizationContext());
+                    TagCombinations = window.TagCombinations.Split(new[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries)
+                };
+                ClearOutput();
+                Output("Sending tag combination list...");
+                await ExecuteAsync((client, cancellationToken) => client.PostTagCombinationsAsync(newList, cancellationToken));
+            }
         }
 
-        private Task<T> SendAsync<T>(Func<Client, CancellationToken, Task<T>> send) 
+        private async Task<T> ExecuteAsync<T>(Func<Client, CancellationToken, Task<T>> send) 
         {
             try
             {
                 CancellationTokenSource = new CancellationTokenSource();
                 string url = ServerUrlTextBox.Text;
                 var client = new Client(url, _clientSettings);
-                return send(client, CancellationTokenSource.Token)
-                    .ContinueWith(t =>
-                    {
-                        try
-                        {
-                            if (t.Exception != null)
-                                Output(t.Exception.ToString());
-                            else if (t.Status == TaskStatus.Canceled)
-                                Output("Canceled.");
-                            else
-                            {
-                                Output("Result received:\r\n{0}", _clientSettings.MediaType == MediaTypes.ApplicationJson 
-                                    ? ResultFormatter.FormatAsJson(t.Result)
-                                    : ResultFormatter.FormatAsXml(t.Result));
-                                return t.Result;
-                            }
-
-                        }
-                        finally
-                        {
-                            client.Dispose();
-                            DisposeCanncellationTokenSource();
-                        }
-                        return default(T);
-                    });
+                try
+                {
+                    T result = await send(client, CancellationTokenSource.Token);
+                    Output("Result received:\r\n{0}", _clientSettings.MediaType == MediaTypes.ApplicationJson
+                        ? ResultFormatter.FormatAsJson(result)
+                        : ResultFormatter.FormatAsXml(result));
+                    return result;
+                }
+                catch (OperationCanceledException)
+                {
+                    Output("Canceled.");
+                }
+                finally
+                {
+                    client.Dispose();
+                    DisposeCanncellationTokenSource();
+                }
             }
             catch (Exception ex)
             {
                 Output(ex.ToString());
                 DisposeCanncellationTokenSource();
-                return null;
             }
+            return default(T);
         }
 
         private void CancelButton_OnClick(object sender, RoutedEventArgs e)
         {
             if (CancellationTokenSource != null)
+            {
                 CancellationTokenSource.Cancel();
+                Output("Canceling...");
+            }
         }
 
         private void SettingsButton_OnClick(object sender, RoutedEventArgs e)

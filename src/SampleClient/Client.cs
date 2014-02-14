@@ -23,10 +23,6 @@ namespace Finkit.ManicTime.Server.SampleClient
         private readonly string _serverUrl;
         private readonly HttpClient _client;
 
-        public Client(string serverUrl) : this(serverUrl, new ClientSettings())
-        {
-        }
-
         public Client(string serverUrl, ClientSettings clientSettings)
         {
             _serverUrl = serverUrl;
@@ -39,60 +35,30 @@ namespace Finkit.ManicTime.Server.SampleClient
             });
         }
 
-        public Task<HomeResource> GetHomeAsync()
-        {
-            return GetHomeAsync(CancellationToken.None);
-        }
-
         public Task<HomeResource> GetHomeAsync(CancellationToken cancellationToken)
         {
-            return GetAsync<HomeResource>(_serverUrl, cancellationToken);
+            return SendAsync<HomeResource>(_serverUrl, HttpMethod.Get, null, cancellationToken);
         }
 
-        public Task<TimelinesResource> GetTimelinesAsync()
+        public async Task<TimelinesResource> GetTimelinesAsync(CancellationToken cancellationToken)
         {
-            return GetTimelinesAsync(CancellationToken.None);
+            HomeResource home = await GetHomeAsync(cancellationToken);
+            string timelinesUrl = home == null ? null : home.Links.Url(Relations.Timelines);
+            if (timelinesUrl != null)
+                return await SendAsync<TimelinesResource>(timelinesUrl, HttpMethod.Get, null, cancellationToken);
+            return null;
         }
 
-        public Task<TimelinesResource> GetTimelinesAsync(CancellationToken cancellationToken)
+        public async Task<TimelineResource> GetActivitiesByTimelineIdAsync(string timelineId, DateTime fromTime, DateTime toTime, CancellationToken cancellationToken)
         {
-            return GetHomeAsync(cancellationToken)
-                .ContinueWith(t =>
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-                    string timelinesUrl = t.Result == null ? null : t.Result.Links.Url(Relations.Timelines);
-                    if (timelinesUrl != null)
-                        return GetAsync<TimelinesResource>(timelinesUrl, cancellationToken);
-                    return null;
-                }, cancellationToken)
-                .Unwrap();
-        }
-
-        public Task<TimelineResource> GetActivitiesByTimelineIdAsync(string timelineId, DateTime fromTime, DateTime toTime)
-        {
-            return GetActivitiesByTimelineIdAsync(timelineId, fromTime, toTime, CancellationToken.None);
-        }
-
-        public Task<TimelineResource> GetActivitiesByTimelineIdAsync(string timelineId, DateTime fromTime, DateTime toTime, CancellationToken cancellationToken)
-        {
-            return GetTimelinesAsync(cancellationToken)
-                .ContinueWith(t =>
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-                    var timeline = t.Result == null || t.Result.Timelines == null
-                        ? null
-                        : t.Result.Timelines.SingleOrDefault(tr => tr.TimelineId == timelineId);
-                    string activitiesUrl = timeline == null ? null : timeline.Links.Url(Relations.Activities);
-                    if (activitiesUrl != null)
-                        return GetActivitiesByUrlAsync(activitiesUrl, fromTime, toTime, cancellationToken);
-                    return null;
-                }, cancellationToken)
-                .Unwrap();
-        }
-
-        public Task<TimelineResource> GetActivitiesByUrlAsync(string activitiesUrl, DateTime fromTime, DateTime toTime)
-        {
-            return GetActivitiesByUrlAsync(activitiesUrl, fromTime, toTime, CancellationToken.None);
+            TimelinesResource timelines = await GetTimelinesAsync(cancellationToken);
+            var timeline = timelines == null || timelines.Timelines == null
+                ? null
+                : timelines.Timelines.SingleOrDefault(tr => tr.TimelineId == timelineId);
+            string activitiesUrl = timeline == null ? null : timeline.Links.Url(Relations.Activities);
+            if (activitiesUrl == null)
+                return null;
+            return await GetActivitiesByUrlAsync(activitiesUrl, fromTime, toTime, cancellationToken);
         }
 
         public Task<TimelineResource> GetActivitiesByUrlAsync(string activitiesUrl, DateTime fromTime, DateTime toTime, CancellationToken cancellationToken)
@@ -101,68 +67,33 @@ namespace Finkit.ManicTime.Server.SampleClient
                 .WithQueryParameter("fromTime", fromTime.FormatIso8601())
                 .WithQueryParameter("toTime", toTime.FormatIso8601())
                 .ToString();
-            return GetAsync<TimelineResource>(url, cancellationToken);
+            return SendAsync<TimelineResource>(url, HttpMethod.Get, null, cancellationToken);
         }
 
-        public Task<TimelineResource> GetUpdatedActivities(string updatedActivitiesUrl)
+        public Task<TimelineResource> GetUpdatedActivitiesAsync(string updatedActivitiesUrl, CancellationToken cancellationToken)
         {
-            return GetAsync<TimelineResource>(updatedActivitiesUrl, CancellationToken.None);
+            return SendAsync<TimelineResource>(updatedActivitiesUrl, HttpMethod.Get, null, cancellationToken);
         }
 
-        public Task<TimelineResource> GetUpdatedActivities(string updatedActivitiesUrl, CancellationToken cancellationToken)
+        public async Task<TagCombinationListResource> GetTagCombinationsAsync(CancellationToken cancellationToken)
         {
-            return GetAsync<TimelineResource>(updatedActivitiesUrl, cancellationToken);
+            HomeResource home = await GetHomeAsync(cancellationToken);
+            string tagCombinationListUrl = home == null ? null : home.Links.Url(Relations.TagCombinationList);
+            if (tagCombinationListUrl == null)
+                return null;
+            return await SendAsync<TagCombinationListResource>(tagCombinationListUrl, HttpMethod.Get, null, cancellationToken);
         }
 
-        public Task<TagCombinationListResource> GetTagCombinationsAsync(CancellationToken cancellationToken)
+        public async Task<TagCombinationListResource> PostTagCombinationsAsync(TagCombinationListResource tagCombinationList, CancellationToken cancellationToken)
         {
-            return GetHomeAsync(cancellationToken)
-                .ContinueWith(t =>
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-                    string tagCombinationListUrl = t.Result == null ? null : t.Result.Links.Url(Relations.TagCombinationList);
-                    if (tagCombinationListUrl != null)
-                        return GetAsync<TagCombinationListResource>(tagCombinationListUrl, cancellationToken);
-                    return null;
-                }, cancellationToken)
-                .Unwrap();
+            HomeResource home = await GetHomeAsync(cancellationToken);
+            string tagCombinationListUrl = home == null ? null : home.Links.Url(Relations.TagCombinationList);
+            if (tagCombinationListUrl == null)
+                return null;
+            return await SendAsync<TagCombinationListResource>(tagCombinationListUrl, HttpMethod.Post, tagCombinationList, cancellationToken);
         }
 
-        public Task<TagCombinationListResource> PostTagCombinationsAsync(TagCombinationListResource tagCombinationList, CancellationToken cancellationToken)
-        {
-            return GetHomeAsync(cancellationToken)
-                .ContinueWith(t =>
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-                    string tagCombinationListUrl = t.Result == null ? null : t.Result.Links.Url(Relations.TagCombinationList);
-                    if (tagCombinationListUrl != null)
-                        return PostAsync<TagCombinationListResource>(tagCombinationListUrl, tagCombinationList, cancellationToken);
-                    return null;
-                }, cancellationToken)
-                .Unwrap();
-        }
-
-        private Task<T> GetAsync<T>(string url)
-        {
-            return GetAsync<T>(url, CancellationToken.None);
-        }
-
-        private Task<T> GetAsync<T>(string url, CancellationToken cancellationToken)
-        {
-            return SendAsync<T>(url, HttpMethod.Get, null, cancellationToken);
-        }
-
-        private Task<T> PostAsync<T>(string url, object value)
-        {
-            return PostAsync<T>(url, value, CancellationToken.None);
-        }
-
-        private Task<T> PostAsync<T>(string url, object value, CancellationToken cancellationToken)
-        {
-            return SendAsync<T>(url, HttpMethod.Post, value, cancellationToken);
-        }
-
-        private Task<T> SendAsync<T>(string url, HttpMethod method, object value, CancellationToken cancellationToken)
+        private async Task<T> SendAsync<T>(string url, HttpMethod method, object value, CancellationToken cancellationToken)
         {
             MediaTypeFormatter mediaTypeFormatter;
             if (!SupportedMediaTypeFormatters.TryGetValue(ClientSettings.MediaType, out mediaTypeFormatter))
@@ -172,16 +103,9 @@ namespace Finkit.ManicTime.Server.SampleClient
                 Content = value == null ? null : new ObjectContent(value.GetType(), value, mediaTypeFormatter)
             };
             request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(ClientSettings.MediaType));
-            return _client.SendAsync(request, cancellationToken)
-                .ContinueWith(t =>
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-                    t.Result.EnsureSuccessStatusCode();
-                    return t.Result.Content
-                        .ReadAsAsync<T>(SupportedMediaTypeFormatters.Values.ToArray())
-                        .ContinueWith(t1 => t1.Result, cancellationToken);
-                }, cancellationToken)
-                .Unwrap();
+            HttpResponseMessage responseMessage = await _client.SendAsync(request, cancellationToken);
+            responseMessage.EnsureSuccessStatusCode();
+            return await responseMessage.Content.ReadAsAsync<T>(SupportedMediaTypeFormatters.Values.ToArray());
         }
 
         public void Dispose()
