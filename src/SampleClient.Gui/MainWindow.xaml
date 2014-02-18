@@ -18,7 +18,7 @@
         <DockPanel Grid.Column="1">
             <Button DockPanel.Dock="Right" x:Name="SettingsButton" Content="Settings..." Click="SettingsButton_OnClick" Padding="5 0 5 0" />
             <Button DockPanel.Dock="Right" x:Name="CancelButton" Content="Cancel request" Click="CancelButton_OnClick" Margin="5 0 5 0" Padding="5 0 5 0" />
-            <TextBox x:Name="ServerUrlTextBox" Text="http://" />
+            <TextBox x:Name="ServerUrlTextBox" />
         </DockPanel>
         
         <StackPanel Grid.Row="2" HorizontalAlignment="Stretch">

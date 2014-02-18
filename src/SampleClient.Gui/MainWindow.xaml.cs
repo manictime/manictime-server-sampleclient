@@ -225,8 +225,10 @@ namespace Finkit.ManicTime.Server.SampleClient.Ui
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            ServerUrlTextBox.Text = string.Format("http://{0}:8080", Environment.MachineName.ToLower());
             ServerUrlTextBox.Focus();
-            ServerUrlTextBox.CaretIndex = ServerUrlTextBox.Text.Length;
+            ServerUrlTextBox.SelectionStart = 7;
+            ServerUrlTextBox.SelectionLength = ServerUrlTextBox.Text.Length - 7;
         }
 
         private void Log(HttpSession session)
