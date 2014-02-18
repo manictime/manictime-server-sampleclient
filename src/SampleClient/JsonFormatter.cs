@@ -7,7 +7,8 @@ namespace Finkit.ManicTime.Server.SampleClient
     {
         public static string Format(object value)
         {
-            return JsonConvert.SerializeObject(value, Formatting.Indented);
+            return JsonConvert.SerializeObject(value, Formatting.Indented, 
+                new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
         }
 
         public static object Parse(string value, Type type)
