@@ -28,6 +28,7 @@
             <Button x:Name="GetUpdatedActivitiesButton" Content="Get updated activities" Click="GetUpdatedActivitiesButton_OnClick" Margin="1" />
             <Button x:Name="GetTagCombinationsButton" Content="Get tag combinations" Click="GetTagCombinationsButton_OnClick" Margin="1" />
             <Button x:Name="UpdateTagCombinationsButton" Content="Update tag combinations" Click="UpdateTagCombinationsButton_OnClick" Margin="1" />
+            <Button x:Name="PublishTimelineButton" Content="Publish timeline" Click="PublishTimelineButton_OnClick" Margin="1" />
         </StackPanel>
 
         <Grid Grid.Row="2" Grid.Column="1">

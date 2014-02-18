@@ -47,6 +47,7 @@ namespace Finkit.ManicTime.Server.SampleClient.Ui
                 GetUpdatedActivitiesButton.IsEnabled = CancellationTokenSource == null && !string.IsNullOrEmpty(UpdatedActivitiesUrl);
                 GetTagCombinationsButton.IsEnabled = CancellationTokenSource == null;
                 UpdateTagCombinationsButton.IsEnabled = CancellationTokenSource == null;
+                PublishTimelineButton.IsEnabled = CancellationTokenSource == null;
                 CancelButton.IsEnabled = CancellationTokenSource != null && !CancellationTokenSource.IsCancellationRequested;
             });
         }
@@ -176,6 +177,38 @@ namespace Finkit.ManicTime.Server.SampleClient.Ui
             _clientSettings = SettingsWindow.Show(this, _clientSettings) ?? _clientSettings;
         }
 
+        private async void PublishTimelineButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            var window = new PublishTimelineWindow
+            {
+                Owner = this,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                TimelineName = "My test timeline",
+                TimelineKey = Guid.NewGuid().ToString(),
+                TimelineType = "Test/MyTestTimelineType",
+                GenericTimelineTypes = new[] { "ManicTime/Generic/Group", "ManicTime/Generic/GroupList" },
+                SelectedGenericTimelineType = "ManicTime/Generic/Group",
+                ClientName = Environment.MachineName,
+                SizeToContent = SizeToContent.WidthAndHeight
+            };
+            if (window.ShowDialog() == true)
+            {
+                var timeline = new TimelineResource
+                {
+                    DisplayName = window.TimelineName,
+                    TimelineType = new TimelineTypeResource
+                    {
+                        TypeName = window.TimelineType,
+                        GenericTypeName = window.SelectedGenericTimelineType,
+                    },
+                    ClientName = window.ClientName,
+                    TimelineKey = window.TimelineKey
+                };
+
+                await ExecuteAsync((client, cancellationToken) => client.PublishTimeline(timeline, cancellationToken));
+            }
+        }
+
         private void DisposeCanncellationTokenSource()
         {
             if (CancellationTokenSource != null)
@@ -245,6 +278,5 @@ namespace Finkit.ManicTime.Server.SampleClient.Ui
             }
             return value;
         }
-
     }
 }

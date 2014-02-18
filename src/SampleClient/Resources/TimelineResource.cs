@@ -38,6 +38,10 @@ namespace Finkit.ManicTime.Server.SampleClient.Resources
         [DataMember(Name = "clientName")]
         public string ClientName { get; set; }
 
+        [XmlElement("timelineKey")]
+        [DataMember(Name = "timelineKey", EmitDefaultValue = false)]
+        public string TimelineKey { get; set; }
+
         [XmlElement("updateState")]
         [DataMember(Name = "updateState")]
         public UpdateStateResource UpdateState { get; set; }

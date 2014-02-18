@@ -102,6 +102,16 @@ namespace Finkit.ManicTime.Server.SampleClient
             return await SendAsync<TagCombinationListResource>(tagCombinationListUrl, HttpMethod.Post, tagCombinationList, cancellationToken);
         }
 
+        public async Task<TimelineResource> PublishTimeline(TimelineResource timeline, CancellationToken cancellationToken)
+        {
+            HomeResource home = await GetHomeAsync(cancellationToken);
+            string timelinesUrl = home == null ? null : home.Links.Url(Relations.Timelines);
+            if (timelinesUrl == null)
+                throw new InvalidOperationException("Cannot publish timeline. Timelines url not found.");
+
+            return await SendAsync<TimelineResource>(timelinesUrl, HttpMethod.Post, timeline, cancellationToken);
+        }
+
         private async Task<T> SendAsync<T>(string url, HttpMethod method, object value, CancellationToken cancellationToken)
         {
             Func<object, string> mediaTypeFormatter;
