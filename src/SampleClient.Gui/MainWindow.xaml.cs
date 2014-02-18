@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -45,7 +47,7 @@ namespace Finkit.ManicTime.Server.SampleClient.Ui
                 GetUpdatedActivitiesButton.IsEnabled = CancellationTokenSource == null && !string.IsNullOrEmpty(UpdatedActivitiesUrl);
                 GetTagCombinationsButton.IsEnabled = CancellationTokenSource == null;
                 UpdateTagCombinationsButton.IsEnabled = CancellationTokenSource == null;
-                CancelButton.IsEnabled = CancellationTokenSource != null;
+                CancelButton.IsEnabled = CancellationTokenSource != null && !CancellationTokenSource.IsCancellationRequested;
             });
         }
 
@@ -57,29 +59,22 @@ namespace Finkit.ManicTime.Server.SampleClient.Ui
 
         private async void HomeButton_OnClick(object sender, RoutedEventArgs e)
         {
-            ClearOutput();
-            Output("Getting home...");
             await ExecuteAsync((client, cancellationToken) => client.GetHomeAsync(cancellationToken));
         }
 
         private async void TimelinesButton_OnClick(object sender, RoutedEventArgs e)
         {
-            ClearOutput();
-            Output("Getting timelines...");
             await ExecuteAsync((client, cancellationToken) => client.GetTimelinesAsync(cancellationToken));
         }
 
         private async void GetActivitiesButton_OnClick(object sender, RoutedEventArgs e)
         {
-            ClearOutput();
-            Output("Getting timelines...");
             TimelinesResource timelines = await ExecuteAsync((client, cancellationToken) => client.GetTimelinesAsync(cancellationToken));
 
             if (timelines == null)
                 return;
             if (timelines.Timelines == null || timelines.Timelines.Length == 0)
             {
-                Output("No timelines");
                 return;
             }
             var window = new TimelinePickerWindow
@@ -94,8 +89,6 @@ namespace Finkit.ManicTime.Server.SampleClient.Ui
             };
             if (window.ShowDialog() == true && window.FromTime != null && window.ToTime != null)
             {
-                ClearOutput();
-                Output("Getting activities...");
                 TimelineResource timeline = await ExecuteAsync((client, cancellationToken) => client.GetActivitiesByTimelineIdAsync(
                     window.SelectedTimeline.TimelineId, window.FromTime.Value, window.ToTime.Value.AddDays(1), cancellationToken));
                 RefreshUpdatedActivitiesUrl(timeline);
@@ -104,8 +97,6 @@ namespace Finkit.ManicTime.Server.SampleClient.Ui
 
         private async void GetUpdatedActivitiesButton_OnClick(object sender, RoutedEventArgs e)
         {
-            ClearOutput();
-            Output("Getting updated activities...");
             TimelineResource timeline = 
                 await ExecuteAsync((client, cancellationToken) => client.GetUpdatedActivitiesAsync(_updatedActivitiesUrl, cancellationToken));
             RefreshUpdatedActivitiesUrl(timeline);
@@ -118,15 +109,11 @@ namespace Finkit.ManicTime.Server.SampleClient.Ui
 
         private async void GetTagCombinationsButton_OnClick(object sender, RoutedEventArgs e)
         {
-            ClearOutput();
-            Output("Getting tag combination list...");
             await ExecuteAsync((client, cancellationToken) => client.GetTagCombinationsAsync(cancellationToken));
         }
 
         private async void UpdateTagCombinationsButton_OnClick(object sender, RoutedEventArgs e)
         {
-            ClearOutput();
-            Output("Getting tag combination list...");
             TagCombinationListResource combinations = 
                 await ExecuteAsync((client, cancellationToken) => client.GetTagCombinationsAsync(cancellationToken));
 
@@ -144,30 +131,21 @@ namespace Finkit.ManicTime.Server.SampleClient.Ui
                 {
                     TagCombinations = window.TagCombinations.Split(new[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries)
                 };
-                ClearOutput();
-                Output("Sending tag combination list...");
                 await ExecuteAsync((client, cancellationToken) => client.PostTagCombinationsAsync(newList, cancellationToken));
             }
         }
 
-        private async Task<T> ExecuteAsync<T>(Func<Client, CancellationToken, Task<T>> send) 
+        private async Task<T> ExecuteAsync<T>(Func<Client, CancellationToken, Task<T>> send) where T : class
         {
             try
             {
+                Log(null);
                 CancellationTokenSource = new CancellationTokenSource();
                 string url = ServerUrlTextBox.Text;
-                var client = new Client(url, _clientSettings);
+                var client = new Client(url, _clientSettings) { Log = Log };
                 try
                 {
-                    T result = await send(client, CancellationTokenSource.Token);
-                    Output("Result received:\r\n{0}", _clientSettings.MediaType == MediaTypes.ApplicationJson
-                        ? ResultFormatter.FormatAsJson(result)
-                        : ResultFormatter.FormatAsXml(result));
-                    return result;
-                }
-                catch (OperationCanceledException)
-                {
-                    Output("Canceled.");
+                    return await send(client, CancellationTokenSource.Token);
                 }
                 finally
                 {
@@ -177,7 +155,8 @@ namespace Finkit.ManicTime.Server.SampleClient.Ui
             }
             catch (Exception ex)
             {
-                Output(ex.ToString());
+                if (ErrorTextBox.Text == string.Empty)
+                    ErrorTextBox.Text = ex.ToString();
                 DisposeCanncellationTokenSource();
             }
             return default(T);
@@ -188,7 +167,7 @@ namespace Finkit.ManicTime.Server.SampleClient.Ui
             if (CancellationTokenSource != null)
             {
                 CancellationTokenSource.Cancel();
-                Output("Canceling...");
+                EnableControls();
             }
         }
 
@@ -206,22 +185,6 @@ namespace Finkit.ManicTime.Server.SampleClient.Ui
             }
         }
 
-        private void ClearOutput()
-        {
-            Invoke(() => OutputTextBox.Clear());
-        }
-
-        private void Output(string format, params object[] args)
-        {
-            Invoke(() =>
-            {
-                if (OutputTextBox.Text != "")
-                    OutputTextBox.AppendText("\r\n");
-                OutputTextBox.AppendText(string.Format(format, args));
-                OutputTextBox.ScrollToEnd();
-            });
-        }
-
         private void Invoke(Action action)
         {
             Dispatcher.Invoke(action);
@@ -232,5 +195,56 @@ namespace Finkit.ManicTime.Server.SampleClient.Ui
             ServerUrlTextBox.Focus();
             ServerUrlTextBox.CaretIndex = ServerUrlTextBox.Text.Length;
         }
+
+        private void Log(HttpSession session)
+        {
+            RequestUrlTextBox.Text = session == null 
+                ? string.Empty 
+                : session.RequestMethod + " " + session.RequestUrl;
+            RequestHeadersTextBox.Text = session == null 
+                ? string.Empty 
+                : string.Format("{0}\r\n{1}", 
+                    FormatHeaders(session.RequestHeaders, "Accept"),
+                    FormatHeaders(session.RequestContentHeaders, "Content-Type")).Trim();
+            RequestContentTextBox.Text = session == null 
+                ? string.Empty 
+                : session.RequestContent;
+
+            ResponseStatusCodeTextBox.Text = session == null || session.ResponseStatusCode == null
+                ? string.Empty
+                : (int)session.ResponseStatusCode + " " + session.ResponseStatusCode;
+            ResponseHeadersTextBox.Text = session == null || session.ResponseHeaders == null 
+                ? string.Empty
+                : FormatHeaders(session.ResponseContentHeaders, "Content-Type");
+            ResponseContentTextBox.Text = session == null || string.IsNullOrEmpty(session.ResponseContent)
+                ? string.Empty 
+                : FormatResource(session.ResponseContent, session.ResponseContentHeaders.ContentType.MediaType);
+
+            ErrorTextBox.Text = session == null || session.Exception == null 
+                ? string.Empty 
+                : session.Exception.ToString();
+        }
+
+        private string FormatHeaders(IEnumerable<KeyValuePair<string, IEnumerable<string>>> headers, params string[] keys)
+        {
+            if (headers == null)
+                return string.Empty;
+            return string.Join(Environment.NewLine,
+                headers.Where(kv => keys.Contains(kv.Key)).Select(kv => string.Format("{0}: {1}", kv.Key, string.Join(", ", kv.Value))));
+        }
+
+        private string FormatResource(string value, string contentType)
+        {
+            MediaTypeHeaderValue mediaTypeHeaderValue;
+            if (MediaTypeHeaderValue.TryParse(contentType, out mediaTypeHeaderValue))
+            {
+                if (mediaTypeHeaderValue.MediaType == MediaTypes.ApplicationJson)
+                    return ResultFormatter.FormatJson(value);
+                if (mediaTypeHeaderValue.MediaType == MediaTypes.ApplicationXml)
+                    return ResultFormatter.FormatXml(value);
+            }
+            return value;
+        }
+
     }
 }

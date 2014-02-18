@@ -29,6 +29,48 @@
             <Button x:Name="GetTagCombinationsButton" Content="Get tag combinations" Click="GetTagCombinationsButton_OnClick" Margin="1" />
             <Button x:Name="UpdateTagCombinationsButton" Content="Update tag combinations" Click="UpdateTagCombinationsButton_OnClick" Margin="1" />
         </StackPanel>
-        <TextBox x:Name="OutputTextBox" Grid.Row="2" Grid.Column="1" IsReadOnly="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" />
+
+        <Grid Grid.Row="2" Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition />
+                <RowDefinition Height="0.5*" />
+            </Grid.RowDefinitions>
+            
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="50" />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+                <Label Grid.Row="0" Content="Request" />
+                <TextBox x:Name="RequestUrlTextBox" Grid.Row="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" />
+                <TextBox x:Name="RequestHeadersTextBox" Grid.Row="2" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" />
+                <TextBox x:Name="RequestContentTextBox" Grid.Row="3" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" />
+            </Grid>
+            
+            <Grid Grid.Row="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="50" />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+                <Label Grid.Row="0" Content="Response" />
+                <TextBox x:Name="ResponseStatusCodeTextBox" Grid.Row="1" IsReadOnly="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" />
+                <TextBox x:Name="ResponseHeadersTextBox" Grid.Row="2" IsReadOnly="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" />
+                <TextBox x:Name="ResponseContentTextBox" Grid.Row="3" IsReadOnly="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" />
+            </Grid>
+            
+            <Grid Grid.Row="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+                <Label Content="Error" />
+                <TextBox x:Name="ErrorTextBox" Grid.Row="1" IsReadOnly="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Margin="1" />
+            </Grid>
+        </Grid>
     </Grid>
 </Window>

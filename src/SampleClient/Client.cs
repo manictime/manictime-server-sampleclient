@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
-using System.Net.Http.Formatting;
 using System.Net.Http.Headers;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Finkit.ManicTime.Server.SampleClient.Resources;
@@ -12,13 +13,21 @@ namespace Finkit.ManicTime.Server.SampleClient
 {
     public class Client : IDisposable
     {
-        private static readonly Dictionary<string, MediaTypeFormatter> SupportedMediaTypeFormatters = new Dictionary<string, MediaTypeFormatter>
+        private static readonly Dictionary<string, Func<object, string>> SupportedMediaTypeFormatters = new Dictionary<string, Func<object, string>>
         {
-            { MediaTypes.ApplicationJson, new JsonMediaTypeFormatter() }, 
-            { MediaTypes.ApplicationXml, new XmlMediaTypeFormatter { UseXmlSerializer = true } }
+            { MediaTypes.ApplicationJson, JsonFormatter.Format }, 
+            { MediaTypes.ApplicationXml, XmlFormatter.Format }
+        };
+
+        private static readonly Dictionary<string, Func<string, Type, object>> SupportedMediaTypeParsers = new Dictionary<string, Func<string, Type, object>>
+        {
+            { MediaTypes.ApplicationJson, JsonFormatter.Parse }, 
+            { MediaTypes.ApplicationXml, XmlFormatter.Parse }
         };
 
         public ClientSettings ClientSettings { get; private set; }
+
+        public Action<HttpSession> Log { get; set; }
 
         private readonly string _serverUrl;
         private readonly HttpClient _client;
@@ -95,17 +104,59 @@ namespace Finkit.ManicTime.Server.SampleClient
 
         private async Task<T> SendAsync<T>(string url, HttpMethod method, object value, CancellationToken cancellationToken)
         {
-            MediaTypeFormatter mediaTypeFormatter;
+            Func<object, string> mediaTypeFormatter;
             if (!SupportedMediaTypeFormatters.TryGetValue(ClientSettings.MediaType, out mediaTypeFormatter))
                 throw new InvalidOperationException("Media type not supported: " + ClientSettings.MediaType);
-            var request = new HttpRequestMessage(method, url)
+            HttpRequestMessage request = null;
+            string requestContent = null;
+            HttpResponseMessage response = null;
+            string responseContent = null;
+            Exception exception = null;
+            object resource = null;
+            try
             {
-                Content = value == null ? null : new ObjectContent(value.GetType(), value, mediaTypeFormatter)
-            };
-            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(ClientSettings.MediaType));
-            HttpResponseMessage responseMessage = await _client.SendAsync(request, cancellationToken);
-            responseMessage.EnsureSuccessStatusCode();
-            return await responseMessage.Content.ReadAsAsync<T>(SupportedMediaTypeFormatters.Values.ToArray());
+                requestContent = value == null ? null : mediaTypeFormatter(value);
+                request = new HttpRequestMessage(method, url);
+                if (requestContent != null)
+                    request.Content = new StringContent(requestContent, Encoding.UTF8, ClientSettings.MediaType);
+                request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(ClientSettings.MediaType));
+
+                response = await _client.SendAsync(request, cancellationToken);
+                responseContent = await response.Content.ReadAsStringAsync();
+                if (!string.IsNullOrEmpty(responseContent))
+                {
+                    Func<string, Type, object> mediaTypeParser;
+                    if (SupportedMediaTypeParsers.TryGetValue(response.Content.Headers.ContentType.MediaType, out mediaTypeParser))
+                        resource = mediaTypeParser(responseContent, typeof(T));
+                }
+            }
+            catch (Exception ex)
+            {
+                exception = ex;
+            }
+            LogSession(request, requestContent, response, responseContent, exception);
+            return (T)resource;
+        }
+
+        private void LogSession(
+            HttpRequestMessage request, string requestContent, 
+            HttpResponseMessage response, string responseContent,
+            Exception exception)
+        {
+            if (Log != null)
+            {
+                Log(new HttpSession(
+                    request == null ? null : request.Method,
+                    request == null ? null : request.RequestUri.ToString(),
+                    request == null ? null : request.Headers,
+                    request == null ? null : request.Content == null ? null : request.Content.Headers,
+                    requestContent,
+                    response == null ? (HttpStatusCode?) null : response.StatusCode,
+                    response == null ? null : response.Headers,
+                    response == null || response.Content == null ? null : response.Content.Headers,
+                    responseContent,
+                    exception));
+            }
         }
 
         public void Dispose()
