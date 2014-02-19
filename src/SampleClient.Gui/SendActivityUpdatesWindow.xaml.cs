@@ -313,6 +313,7 @@ namespace Finkit.ManicTime.Server.SampleClient.Ui
             }
             else
             {
+                GroupListsTextBox.Text = "";
                 ActivitiesTextBox.Text =
                     string.Format("+100; Running; 1; ; {0}; {1}\r\n", DateTime.Today.AddHours(8), DateTime.Today.AddHours(9).AddMinutes(15)) +
                     string.Format("+200; Working of first project; 3; ; {0}; {1}; Got a lot of work done\r\n",

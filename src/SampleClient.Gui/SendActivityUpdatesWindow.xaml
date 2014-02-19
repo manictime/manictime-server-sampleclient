@@ -13,6 +13,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="100" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="100" />
@@ -24,8 +25,10 @@
         <Label Content="Timeline" Grid.Row="0" />
         <ComboBox Grid.Row="1" HorizontalAlignment="Stretch" Margin="1"
                   ItemsSource="{Binding Timelines, ElementName=ThisWindow}" DisplayMemberPath="DisplayName" SelectedItem="{Binding SelectedTimeline, ElementName=ThisWindow}" />
-        
-        <StackPanel Grid.Row="2">
+
+        <Button x:Name="SampleDataButton" Content="Create Sample Data" Grid.Row="2" HorizontalAlignment="Left" Margin="0 5 0 15" Width="130" Click="SampleDataButton_OnClick" />
+
+        <StackPanel Grid.Row="3">
             <Label Content="Groups"/>
             <StackPanel Orientation="Horizontal">
                 <Label Content="  add or update:" />
@@ -36,9 +39,9 @@
                 <Label Content=" -groupId" FontWeight="Bold" />
             </StackPanel>
         </StackPanel>
-        <TextBox x:Name="GroupsTextBox" Grid.Row="3" AcceptsReturn="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" />
+        <TextBox x:Name="GroupsTextBox" Grid.Row="4" AcceptsReturn="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" />
 
-        <StackPanel Grid.Row="4">
+        <StackPanel Grid.Row="5">
             <Label Content="Group Lists"/>
             <StackPanel Orientation="Horizontal">
                 <Label Content="  add or update:" />
@@ -49,9 +52,9 @@
                 <Label Content=" -groupListId" FontWeight="Bold" />
             </StackPanel>
         </StackPanel>
-        <TextBox x:Name="GroupListsTextBox" Grid.Row="5" AcceptsReturn="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" />
+        <TextBox x:Name="GroupListsTextBox" Grid.Row="6" AcceptsReturn="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" />
 
-        <StackPanel Grid.Row="6">
+        <StackPanel Grid.Row="7">
             <Label Content="Activities"/>
             <StackPanel Orientation="Horizontal">
                 <Label Content="  add or update:" />
@@ -62,10 +65,9 @@
                 <Label Content=" -activityId" FontWeight="Bold" />
             </StackPanel>
         </StackPanel>
-        <TextBox x:Name="ActivitiesTextBox" Grid.Row="7" AcceptsReturn="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" />
+        <TextBox x:Name="ActivitiesTextBox" Grid.Row="8" AcceptsReturn="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" />
 
-        <Button x:Name="SampleDataButton" Content="Create Sample Data" Grid.Row="8" HorizontalAlignment="Left" Margin="0 5 0 0" Width="130" Click="SampleDataButton_OnClick" />
-        <StackPanel Grid.Row="8" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0 5 0 0">
+        <StackPanel Grid.Row="9" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0 5 0 0">
             <Button x:Name="SendButton" Content="Send" Width="100" Click="SendButton_Click" Margin="1" IsEnabled="false" />
             <Button x:Name="CancelButton" Content="Cancel" Width="100" IsCancel="True" Click="CancelButton_Click" Margin="1" />
         </StackPanel>
