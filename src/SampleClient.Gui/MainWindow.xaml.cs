@@ -50,6 +50,7 @@ namespace Finkit.ManicTime.Server.SampleClient.Ui
                 GetTagCombinationsButton.IsEnabled = CancellationTokenSource == null;
                 UpdateTagCombinationsButton.IsEnabled = CancellationTokenSource == null;
                 PublishTimelineButton.IsEnabled = CancellationTokenSource == null;
+                SendActivityUpdatesButton.IsEnabled = CancellationTokenSource == null;
                 CancelButton.IsEnabled = CancellationTokenSource != null && !CancellationTokenSource.IsCancellationRequested;
             });
         }
