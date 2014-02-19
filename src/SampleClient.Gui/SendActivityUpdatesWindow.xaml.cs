@@ -83,7 +83,9 @@ namespace Finkit.ManicTime.Server.SampleClient.Ui
         {
             SendButton.IsEnabled = SelectedTimeline != null;
             GroupListsTextBox.IsEnabled = SelectedTimeline != null && SelectedTimeline.TimelineType.GenericTypeName == "ManicTime/Generic/GroupList";
+            SampleDataButton.IsEnabled = SelectedTimeline != null;
         }
+
 
         private void SendButton_Click(object sender, RoutedEventArgs e)
         {
@@ -268,6 +270,42 @@ namespace Finkit.ManicTime.Server.SampleClient.Ui
             }
 
             return activity;
+        }
+
+        private void SampleDataButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            CreateSampleData();
+        }
+
+        private void CreateSampleData()
+        {
+            GroupsTextBox.Text =
+                "+1; Work; Work; #FFAA10; false\r\n" +
+                "+2; Free time; Free time; #AA0000; false\r\n" +
+                "+3; My first project; My first project; #00AA00; false; This is my first project\r\n" +
+                "+4; My second project; My second project; #0000AA; false; This is my second project";
+            if (SelectedTimeline.TimelineType.GenericTypeName == "ManicTime/Generic/GroupList")
+            {
+                GroupListsTextBox.Text =
+                    "+10; Free time; ; 2\r\n" +
+                    "+20; Work, my first project; #00BB00; 1, 3\r\n" +
+                    "+30; Work, my second project; ; 1, 4";
+                ActivitiesTextBox.Text =
+                    string.Format("+100; Running; ; 10; {0}; {1}\r\n", DateTime.Today.AddHours(8), DateTime.Today.AddHours(9).AddMinutes(15)) +
+                    string.Format("+200; Working of first project; ; 20; {0}; {1}; Got a lot of work done\r\n", 
+                        DateTime.Today.AddHours(10), DateTime.Today.AddHours(11)) +
+                    string.Format("+300; Working of second project; ; 30; {0}; {1}", 
+                        DateTime.Today.AddHours(11), DateTime.Today.AddHours(12).AddMinutes(10).AddSeconds(30));
+            }
+            else
+            {
+                ActivitiesTextBox.Text =
+                    string.Format("+100; Running; 1; ; {0}; {1}\r\n", DateTime.Today.AddHours(8), DateTime.Today.AddHours(9).AddMinutes(15)) +
+                    string.Format("+200; Working of first project; 3; ; {0}; {1}; Got a lot of work done\r\n",
+                        DateTime.Today.AddHours(10), DateTime.Today.AddHours(11)) +
+                    string.Format("+300; Working of second project; 4; ; {0}; {1}",
+                        DateTime.Today.AddHours(11), DateTime.Today.AddHours(12).AddMinutes(10).AddSeconds(30));
+            }
         }
     }
 }
