@@ -35,6 +35,8 @@ namespace Finkit.ManicTime.Server.SampleClient.Ui
             }
         }
 
+        private string SelectedTimelineId { get; set; }
+
         private void EnableControls()
         {
             Invoke(() =>
@@ -83,15 +85,16 @@ namespace Finkit.ManicTime.Server.SampleClient.Ui
                 Owner = this,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 Timelines = timelines.Timelines,
-                SelectedTimeline = timelines.Timelines.FirstOrDefault(),
+                SelectedTimeline = timelines.Timelines.SingleOrDefault(t => t.TimelineId == SelectedTimelineId) ??  timelines.Timelines.FirstOrDefault(),
                 FromTime = DateTime.Today,
                 ToTime = DateTime.Today,
                 SizeToContent = SizeToContent.WidthAndHeight
             };
             if (window.ShowDialog() == true && window.FromTime != null && window.ToTime != null)
             {
+                SelectedTimelineId = window.SelectedTimeline.TimelineId;
                 TimelineResource timeline = await ExecuteAsync((client, cancellationToken) => client.GetActivitiesByTimelineIdAsync(
-                    window.SelectedTimeline.TimelineId, window.FromTime.Value, window.ToTime.Value.AddDays(1), cancellationToken));
+                    SelectedTimelineId, window.FromTime.Value, window.ToTime.Value.AddDays(1), cancellationToken));
                 RefreshUpdatedActivitiesUrl(timeline);
             }
         }
@@ -220,12 +223,12 @@ namespace Finkit.ManicTime.Server.SampleClient.Ui
                 Owner = this,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 Timelines = timelines.Timelines,
-                SelectedTimeline = timelines.Timelines.FirstOrDefault(),
+                SelectedTimeline = timelines.Timelines.SingleOrDefault(t => t.TimelineId == SelectedTimelineId) ?? timelines.Timelines.FirstOrDefault(),
                 SizeToContent = SizeToContent.WidthAndHeight
             };
             if (window.ShowDialog() == true)
             {
-                string timelineId = window.SelectedTimeline.TimelineId;
+                SelectedTimelineId = window.SelectedTimeline.TimelineId;
                 var activityUpdates = new ActivityUpdatesResource
                 {
                     ClientName = window.SelectedTimeline.ClientName,
@@ -237,7 +240,7 @@ namespace Finkit.ManicTime.Server.SampleClient.Ui
                     Groups = window.Groups,
                     DeletedGroupIds = window.DeletedGroupIds
                 };
-                await ExecuteAsync((client, cancellationToken) => client.SendActivityUpdates(timelineId, activityUpdates, cancellationToken));
+                await ExecuteAsync((client, cancellationToken) => client.SendActivityUpdates(SelectedTimelineId, activityUpdates, cancellationToken));
             }
         }
 
