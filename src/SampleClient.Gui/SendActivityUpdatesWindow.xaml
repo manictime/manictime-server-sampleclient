@@ -1,7 +1,8 @@
 ﻿<Window x:Class="Finkit.ManicTime.Server.SampleClient.Ui.SendActivityUpdatesWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Send Activity Updates" x:Name="ThisWindow" ResizeMode="NoResize" MinWidth="600" MaxWidth="600">
+        Title="Send Activity Updates" x:Name="ThisWindow" ResizeMode="NoResize" MinWidth="600" MaxWidth="600"
+        Loaded="SendActivityUpdatesWindow_OnLoaded">
     <Window.Resources>
         <Style TargetType="Label">
             <Setter Property="Padding" Value="0" />

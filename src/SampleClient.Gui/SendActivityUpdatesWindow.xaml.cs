@@ -9,6 +9,10 @@ namespace Finkit.ManicTime.Server.SampleClient.Ui
 {
     public partial class SendActivityUpdatesWindow
     {
+        private static string GroupsText;
+        private static string GroupListsText;
+        private static string ActivitiesText;
+
         public static readonly DependencyProperty TimelinesProperty = DependencyProperty.Register(
             "Timelines", typeof(TimelineResource[]), typeof(SendActivityUpdatesWindow), new PropertyMetadata(default( TimelineResource[] )));
         public TimelineResource[] Timelines
@@ -79,6 +83,13 @@ namespace Finkit.ManicTime.Server.SampleClient.Ui
             InitializeComponent();
         }
 
+        private void SendActivityUpdatesWindow_OnLoaded(object sender, RoutedEventArgs e)
+        {
+            GroupsTextBox.Text = GroupsText;
+            GroupListsTextBox.Text = GroupListsText;
+            ActivitiesTextBox.Text = ActivitiesText;
+        }
+
         private void OnTimelineSelected()
         {
             SendButton.IsEnabled = SelectedTimeline != null;
@@ -93,6 +104,9 @@ namespace Finkit.ManicTime.Server.SampleClient.Ui
             {
                 Parse();
                 DialogResult = true;
+                GroupsText = GroupsTextBox.Text;
+                GroupListsText = GroupListsTextBox.Text;
+                ActivitiesText = ActivitiesTextBox.Text;
                 Close();
             }
             catch (Exception ex)
