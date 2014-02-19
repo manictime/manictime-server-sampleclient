@@ -209,6 +209,38 @@ namespace Finkit.ManicTime.Server.SampleClient.Ui
             }
         }
 
+        private async void SendActivityUpdatesButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            TimelinesResource timelines = await ExecuteAsync((client, cancellationToken) => client.GetTimelinesAsync(cancellationToken));
+            if (timelines == null || timelines.Timelines == null || timelines.Timelines.Length == 0)
+                return;
+
+            var window = new SendActivityUpdatesWindow
+            {
+                Owner = this,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                Timelines = timelines.Timelines,
+                SelectedTimeline = timelines.Timelines.FirstOrDefault(),
+                SizeToContent = SizeToContent.WidthAndHeight
+            };
+            if (window.ShowDialog() == true)
+            {
+                string timelineId = window.SelectedTimeline.TimelineId;
+                var activityUpdates = new ActivityUpdatesResource
+                {
+                    ClientName = window.SelectedTimeline.ClientName,
+                    TimelineKey = window.SelectedTimeline.TimelineKey,
+                    Activities = window.Activities,
+                    DeletedActivityIds = window.DeletedActivityIds,
+                    GroupLists = window.GroupLists,
+                    DeletedGroupListIds = window.DeletedGroupListIds,
+                    Groups = window.Groups,
+                    DeletedGroupIds = window.DeletedGroupIds
+                };
+                await ExecuteAsync((client, cancellationToken) => client.SendActivityUpdates(timelineId, activityUpdates, cancellationToken));
+            }
+        }
+
         private void DisposeCanncellationTokenSource()
         {
             if (CancellationTokenSource != null)

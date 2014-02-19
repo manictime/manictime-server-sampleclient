@@ -95,6 +95,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Relations.cs" />
     <Compile Include="Resources\ActivityResource.cs" />
+    <Compile Include="Resources\ActivityUpdatesResource.cs" />
     <Compile Include="Resources\FolderResource.cs" />
     <Compile Include="Resources\GroupResource.cs" />
     <Compile Include="Resources\GroupListResource.cs" />

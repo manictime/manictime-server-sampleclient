@@ -112,6 +112,20 @@ namespace Finkit.ManicTime.Server.SampleClient
             return await SendAsync<TimelineResource>(timelinesUrl, HttpMethod.Post, timeline, cancellationToken);
         }
 
+        public async Task<UpdateStateResource> SendActivityUpdates(string timelineId, ActivityUpdatesResource activityUpdates, CancellationToken cancellationToken)
+        {
+            TimelinesResource timelines = await GetTimelinesAsync(cancellationToken);
+            var timeline = timelines == null || timelines.Timelines == null
+                ? null
+                : timelines.Timelines.SingleOrDefault(tr => tr.TimelineId == timelineId);
+            if (timeline == null)
+                throw new InvalidOperationException("Cannot update activities. Timeline not found.");
+            string activityUpdatesUrl = timeline.Links.Url(Relations.ActivityUpdates);
+            if (activityUpdatesUrl == null)
+                throw new InvalidOperationException("Cannot update activities. Activity updates url not found.");
+            return await SendAsync<UpdateStateResource>(activityUpdatesUrl, HttpMethod.Post, activityUpdates, cancellationToken);
+        }
+
         private async Task<T> SendAsync<T>(string url, HttpMethod method, object value, CancellationToken cancellationToken)
         {
             Func<object, string> mediaTypeFormatter;
