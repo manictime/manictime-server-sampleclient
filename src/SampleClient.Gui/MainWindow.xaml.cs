@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.Http.Headers;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -199,13 +201,22 @@ namespace Finkit.ManicTime.Server.SampleClient.Ui
             {
                 var timeline = new TimelineResource
                 {
-                    DisplayName = window.TimelineName,
+                    Name = window.TimelineName,
                     TimelineType = new TimelineTypeResource
                     {
                         TypeName = window.TimelineType,
                         GenericTypeName = window.SelectedGenericTimelineType,
                     },
-                    ClientName = window.ClientName,
+                    ClientEnvironment = new ClientEnvironmentResource
+                    {
+                        ApplicationName = Path.GetFileName(Assembly.GetEntryAssembly().Location),
+                        ApplicationVersion = Assembly.GetEntryAssembly().GetName().Version.ToString(),
+                        DatabaseId = "ClientRandomId",
+                        DeviceName = window.ClientName,
+                        DeviceSystemName = Environment.MachineName,
+                        OperatingSystem = "Windows",
+                        OperatingSystemVersion = Environment.OSVersion.Version.ToString()
+                    },
                     TimelineKey = window.TimelineKey
                 };
 
@@ -232,7 +243,7 @@ namespace Finkit.ManicTime.Server.SampleClient.Ui
                 SelectedTimelineId = window.SelectedTimeline.TimelineId;
                 var activityUpdates = new ActivityUpdatesResource
                 {
-                    ClientName = window.SelectedTimeline.ClientName,
+                    ClientEnvironment = window.SelectedTimeline.ClientEnvironment,
                     TimelineKey = window.SelectedTimeline.TimelineKey,
                     Activities = window.Activities,
                     DeletedActivityIds = window.DeletedActivityIds,
@@ -309,10 +320,8 @@ namespace Finkit.ManicTime.Server.SampleClient.Ui
             MediaTypeHeaderValue mediaTypeHeaderValue;
             if (MediaTypeHeaderValue.TryParse(contentType, out mediaTypeHeaderValue))
             {
-                if (mediaTypeHeaderValue.MediaType == MediaTypes.ApplicationJson)
+                if (mediaTypeHeaderValue.MediaType == MediaTypes.ManicTimeJson)
                     return ResultFormatter.FormatJson(value);
-                if (mediaTypeHeaderValue.MediaType == MediaTypes.ApplicationXml)
-                    return ResultFormatter.FormatXml(value);
             }
             return value;
         }

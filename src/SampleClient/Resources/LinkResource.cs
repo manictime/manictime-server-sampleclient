@@ -1,19 +1,9 @@
-﻿using System;
-using System.Runtime.Serialization;
-using System.Xml.Serialization;
-
-namespace Finkit.ManicTime.Server.SampleClient.Resources
+﻿namespace Finkit.ManicTime.Server.SampleClient.Resources
 {
-    [Serializable]
-    [DataContract(Name = "link")]
     public class LinkResource
     {
-        [XmlAttribute("rel")]
-        [DataMember(Name = "rel")]
         public string Rel { get; set; }
 
-        [XmlAttribute("href")]
-        [DataMember(Name = "href")]
         public string Href { get; set; }
     }
 }

@@ -11,7 +11,7 @@
         </Grid.RowDefinitions>
         <Label Content="Timeline" />
         <ComboBox Grid.Row="1" HorizontalAlignment="Stretch" Margin="1"
-                  ItemsSource="{Binding Timelines, ElementName=ThisWindow}" DisplayMemberPath="DisplayName" SelectedItem="{Binding SelectedTimeline, ElementName=ThisWindow}" />
+                  ItemsSource="{Binding Timelines, ElementName=ThisWindow}" SelectedItem="{Binding SelectedTimeline, ElementName=ThisWindow}" />
         <StackPanel Orientation="Horizontal" Grid.Row="2" Margin="3">
             <Label Content="From" />
             <DatePicker SelectedDate="{Binding FromTime, ElementName=ThisWindow}"  />

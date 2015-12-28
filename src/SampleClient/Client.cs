@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -13,18 +12,6 @@ namespace Finkit.ManicTime.Server.SampleClient
 {
     public class Client : IDisposable
     {
-        private static readonly Dictionary<string, Func<object, string>> SupportedMediaTypeFormatters = new Dictionary<string, Func<object, string>>
-        {
-            { MediaTypes.ApplicationJson, JsonFormatter.Format }, 
-            { MediaTypes.ApplicationXml, XmlFormatter.Format }
-        };
-
-        private static readonly Dictionary<string, Func<string, Type, object>> SupportedMediaTypeParsers = new Dictionary<string, Func<string, Type, object>>
-        {
-            { MediaTypes.ApplicationJson, JsonFormatter.Parse }, 
-            { MediaTypes.ApplicationXml, XmlFormatter.Parse }
-        };
-
         public ClientSettings ClientSettings { get; private set; }
 
         public Action<HttpSession> Log { get; set; }
@@ -128,9 +115,6 @@ namespace Finkit.ManicTime.Server.SampleClient
 
         private async Task<T> SendAsync<T>(string url, HttpMethod method, object value, CancellationToken cancellationToken)
         {
-            Func<object, string> mediaTypeFormatter;
-            if (!SupportedMediaTypeFormatters.TryGetValue(ClientSettings.MediaType, out mediaTypeFormatter))
-                throw new InvalidOperationException("Media type not supported: " + ClientSettings.MediaType);
             HttpRequestMessage request = null;
             string requestContent = null;
             HttpResponseMessage response = null;
@@ -139,19 +123,18 @@ namespace Finkit.ManicTime.Server.SampleClient
             object resource = null;
             try
             {
-                requestContent = value == null ? null : mediaTypeFormatter(value);
+                requestContent = value == null ? null : JsonFormatter.Format(value);
                 request = new HttpRequestMessage(method, url);
                 if (requestContent != null)
-                    request.Content = new StringContent(requestContent, Encoding.UTF8, ClientSettings.MediaType);
-                request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(ClientSettings.MediaType));
+                    request.Content = new StringContent(requestContent, Encoding.UTF8, MediaTypes.ManicTimeJson);
+                request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(MediaTypes.ManicTimeJson));
 
                 response = await _client.SendAsync(request, cancellationToken);
                 responseContent = await response.Content.ReadAsStringAsync();
                 if (!string.IsNullOrEmpty(responseContent))
                 {
-                    Func<string, Type, object> mediaTypeParser;
-                    if (SupportedMediaTypeParsers.TryGetValue(response.Content.Headers.ContentType.MediaType, out mediaTypeParser))
-                        resource = mediaTypeParser(responseContent, typeof(T));
+                    if (response.Content.Headers.ContentType.MediaType == MediaTypes.ManicTimeJson)
+                        resource = JsonFormatter.Parse(responseContent, typeof(T));
                 }
             }
             catch (Exception ex)

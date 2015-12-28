@@ -43,10 +43,6 @@ namespace Finkit.ManicTime.Server.SampleClient.Ui
 
         private void UpdateForm()
         {
-            if (_clientSettings.MediaType == MediaTypes.ApplicationJson)
-                JsonMessageFormatRadioButton.IsChecked = true;
-            else
-                XmlMessageFormatRadioButton.IsChecked = true;
             if (_clientSettings.Credentials == null)
             {
                 CurrentUserRadioButton.IsChecked = true;
@@ -62,9 +58,7 @@ namespace Finkit.ManicTime.Server.SampleClient.Ui
 
         private void UpdateSettings()
         {
-            _clientSettings = new ClientSettings(
-                JsonMessageFormatRadioButton.IsChecked == true ? MediaTypes.ApplicationJson : MediaTypes.ApplicationXml,
-                CurrentUserRadioButton.IsChecked == true
+            _clientSettings = new ClientSettings(CurrentUserRadioButton.IsChecked == true
                     ? null
                     : new NetworkCredential(UsernameTextBox.Text, PasswordTextBox.Password, DomainTextBox.Text));
         }

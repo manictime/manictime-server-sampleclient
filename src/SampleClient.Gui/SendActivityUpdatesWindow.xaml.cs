@@ -225,7 +225,7 @@ namespace Finkit.ManicTime.Server.SampleClient.Ui
             {
                 GroupListId = values[0],
                 DisplayKey = values[1],
-                Color = values[2] == string.Empty ? (int?)null : values[2].ToRgb(),
+                Color = values[2],
                 GroupIds = values[3].Split(',').Select(v => v.Trim()).ToArray()
             };
         }
@@ -294,15 +294,15 @@ namespace Finkit.ManicTime.Server.SampleClient.Ui
         private void CreateSampleData()
         {
             GroupsTextBox.Text =
-                "+1; Work; Work; #FFAA10; false\r\n" +
-                "+2; Free time; Free time; #AA0000; false\r\n" +
-                "+3; My first project; My first project; #00AA00; false; This is my first project\r\n" +
-                "+4; My second project; My second project; #0000AA; false; This is my second project";
+                "+1; Work; Work; FFAA10; false\r\n" +
+                "+2; Free time; Free time; AA0000; false\r\n" +
+                "+3; My first project; My first project; 00AA00; false; This is my first project\r\n" +
+                "+4; My second project; My second project; 0000AA; false; This is my second project";
             if (SelectedTimeline.TimelineType.GenericTypeName == "ManicTime/Generic/GroupList")
             {
                 GroupListsTextBox.Text =
                     "+10; Free time; ; 2\r\n" +
-                    "+20; Work, my first project; #00BB00; 1, 3\r\n" +
+                    "+20; Work, my first project; 00BB00; 1, 3\r\n" +
                     "+30; Work, my second project; ; 1, 4";
                 ActivitiesTextBox.Text =
                     string.Format("+100; Running; ; 10; {0}; {1}\r\n", DateTime.Today.AddHours(8), DateTime.Today.AddHours(9).AddMinutes(15)) +

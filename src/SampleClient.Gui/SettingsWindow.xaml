@@ -9,12 +9,6 @@
         </Grid.RowDefinitions>
 
         <StackPanel Orientation="Vertical">
-            <GroupBox Header="Message format">
-                <StackPanel Orientation="Horizontal">
-                    <RadioButton x:Name="JsonMessageFormatRadioButton" Content="JSON" Margin="3" />
-                    <RadioButton x:Name="XmlMessageFormatRadioButton" Content="XML" Margin="3" />
-                </StackPanel>
-            </GroupBox>
             <GroupBox Header="Logon as" Width="200">
                 <StackPanel>
                     <RadioButton x:Name="CurrentUserRadioButton" Margin="0 5 0 5" GroupName="userType" Content="Current user" />

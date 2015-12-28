@@ -24,7 +24,7 @@
         
         <Label Content="Timeline" Grid.Row="0" />
         <ComboBox Grid.Row="1" HorizontalAlignment="Stretch" Margin="1"
-                  ItemsSource="{Binding Timelines, ElementName=ThisWindow}" DisplayMemberPath="DisplayName" SelectedItem="{Binding SelectedTimeline, ElementName=ThisWindow}" />
+                  ItemsSource="{Binding Timelines, ElementName=ThisWindow}" SelectedItem="{Binding SelectedTimeline, ElementName=ThisWindow}" />
 
         <Button x:Name="SampleDataButton" Content="Create Sample Data" Grid.Row="2" HorizontalAlignment="Left" Margin="0 5 0 15" Width="130" Click="SampleDataButton_OnClick" />
 

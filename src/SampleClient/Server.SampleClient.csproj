@@ -96,6 +96,7 @@
     <Compile Include="Relations.cs" />
     <Compile Include="Resources\ActivityResource.cs" />
     <Compile Include="Resources\ActivityUpdatesResource.cs" />
+    <Compile Include="Resources\ClientEnvironmentResource.cs" />
     <Compile Include="Resources\FolderResource.cs" />
     <Compile Include="Resources\GroupResource.cs" />
     <Compile Include="Resources\GroupListResource.cs" />
@@ -108,6 +109,7 @@
     <Compile Include="Resources\TimelineTypeResource.cs" />
     <Compile Include="Resources\UpdateStateResource.cs" />
     <Compile Include="Resources\UserResource.cs" />
+    <Compile Include="Resources\UserTagCombinationListResource.cs" />
     <Compile Include="UriBuilderExtensions.cs" />
     <Compile Include="XmlFormatter.cs" />
   </ItemGroup>
