@@ -78,6 +78,7 @@
     <Compile Include="SettingsWindow.xaml.cs">
       <DependentUpon>SettingsWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="SettingsWindowViewModel.cs" />
     <Compile Include="StringHelper.cs" />
     <Compile Include="TagCombinationsEditWindow.xaml.cs">
       <DependentUpon>TagCombinationsEditWindow.xaml</DependentUpon>
@@ -85,6 +86,7 @@
     <Compile Include="TimelinePickerWindow.xaml.cs">
       <DependentUpon>TimelinePickerWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="SettingsWindowUserType.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

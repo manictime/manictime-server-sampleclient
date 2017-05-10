@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http.Headers;
 using System.Reflection;
 using System.Threading;
@@ -13,7 +14,7 @@ namespace Finkit.ManicTime.Server.SampleClient.Ui
 {
     public partial class MainWindow
     {
-        private ClientSettings _clientSettings = new ClientSettings();
+        private SettingsWindowViewModel _settingsWindowViewModel = new SettingsWindowViewModel(SettingsWindowUserType.WindowsUser, null, null, null);
 
         private string _updatedActivitiesUrl;
         private string UpdatedActivitiesUrl
@@ -45,6 +46,10 @@ namespace Finkit.ManicTime.Server.SampleClient.Ui
             {
                 ServerUrlTextBox.IsEnabled = CancellationTokenSource == null;
                 SettingsButton.IsEnabled = CancellationTokenSource == null;
+                AccessTokenTextBox.IsEnabled = CancellationTokenSource == null &&
+                                               _settingsWindowViewModel.UserType == SettingsWindowUserType.ManicTimeUser;
+                LoginButton.IsEnabled = CancellationTokenSource == null &&
+                                        _settingsWindowViewModel.UserType == SettingsWindowUserType.ManicTimeUser;
                 HomeButton.IsEnabled = CancellationTokenSource == null;
                 TimelinesButton.IsEnabled = CancellationTokenSource == null;
                 GetActivitiesButton.IsEnabled = CancellationTokenSource == null;
@@ -61,6 +66,18 @@ namespace Finkit.ManicTime.Server.SampleClient.Ui
         {
             InitializeComponent();
             EnableControls();
+        }
+
+        private async void LoginButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            AccessTokenTextBox.Text = await ExecuteAsync(async (client, cancellationToken) =>
+            {
+                var accessToken = await client.AuthenticateOauthAsync(_settingsWindowViewModel.Username, _settingsWindowViewModel.Password,
+                    cancellationToken);
+                if (accessToken == null && ErrorTextBox.Text == string.Empty)
+                    ErrorTextBox.Text = "Invalid username or password.";
+                return accessToken;
+            }, NoCredentials.Value);
         }
 
         private async void HomeButton_OnClick(object sender, RoutedEventArgs e)
@@ -142,14 +159,14 @@ namespace Finkit.ManicTime.Server.SampleClient.Ui
             }
         }
 
-        private async Task<T> ExecuteAsync<T>(Func<Client, CancellationToken, Task<T>> send) where T : class
+        private async Task<T> ExecuteAsync<T>(Func<Client, CancellationToken, Task<T>> send, IServerHttpCredentials credentials = null) where T : class
         {
             try
             {
                 Log(null);
                 CancellationTokenSource = new CancellationTokenSource();
                 string url = ServerUrlTextBox.Text;
-                var client = new Client(url, _clientSettings) { Log = Log };
+                var client = new Client(url, new ClientSettings(credentials ?? GetCredentials())) { Log = Log };
                 try
                 {
                     return await send(client, CancellationTokenSource.Token);
@@ -169,6 +186,17 @@ namespace Finkit.ManicTime.Server.SampleClient.Ui
             return default(T);
         }
 
+        private IServerHttpCredentials GetCredentials()
+        {
+            if (_settingsWindowViewModel.UserType == SettingsWindowUserType.WindowsUser)
+                return _settingsWindowViewModel.Username == null
+                    ? NtlmCredentials.Default
+                    : new NtlmCredentials(new NetworkCredential(_settingsWindowViewModel.Username, _settingsWindowViewModel.Password, _settingsWindowViewModel.Domain));
+            if (AccessTokenTextBox.Text.Trim() != "")
+                return new OAuthCredentials(AccessTokenTextBox.Text.Trim());
+            return NoCredentials.Value;
+        }
+
         private void CancelButton_OnClick(object sender, RoutedEventArgs e)
         {
             if (CancellationTokenSource != null)
@@ -180,7 +208,13 @@ namespace Finkit.ManicTime.Server.SampleClient.Ui
 
         private void SettingsButton_OnClick(object sender, RoutedEventArgs e)
         {
-            _clientSettings = SettingsWindow.Show(this, _clientSettings) ?? _clientSettings;
+            var settingsViewModel = SettingsWindow.Show(this, _settingsWindowViewModel);
+            if (settingsViewModel != null)
+            {
+                AccessTokenTextBox.Text = string.Empty;
+                _settingsWindowViewModel = settingsViewModel;
+                EnableControls();
+            }
         }
 
         private async void PublishTimelineButton_OnClick(object sender, RoutedEventArgs e)
@@ -280,31 +314,37 @@ namespace Finkit.ManicTime.Server.SampleClient.Ui
 
         private void Log(HttpSession session)
         {
-            RequestUrlTextBox.Text = session == null 
-                ? string.Empty 
-                : session.RequestMethod + " " + session.RequestUrl;
-            RequestHeadersTextBox.Text = session == null 
-                ? string.Empty 
-                : string.Format("{0}\r\n{1}", 
-                    FormatHeaders(session.RequestHeaders, "Accept"),
-                    FormatHeaders(session.RequestContentHeaders, "Content-Type")).Trim();
-            RequestContentTextBox.Text = session == null 
-                ? string.Empty 
-                : session.RequestContent;
+            Invoke(() =>
+            {
+                RequestUrlTextBox.Text = session == null
+                    ? string.Empty
+                    : session.RequestMethod + " " + session.RequestUrl;
+                RequestHeadersTextBox.Text = session == null
+                    ? string.Empty
+                    : string.Join("\r\n", 
+                        FormatHeaders(session.RequestHeaders, "Accept"),
+                        FormatHeaders(session.RequestContentHeaders, "Content-Type"),
+                        FormatHeaders(session.RequestHeaders, "Authorization")).Replace("\r\n\r\n", "\r\n").Trim();
+                RequestContentTextBox.Text = session == null
+                    ? string.Empty
+                    : session.RequestContent;
 
-            ResponseStatusCodeTextBox.Text = session == null || session.ResponseStatusCode == null
-                ? string.Empty
-                : (int)session.ResponseStatusCode + " " + session.ResponseStatusCode;
-            ResponseHeadersTextBox.Text = session == null || session.ResponseHeaders == null 
-                ? string.Empty
-                : FormatHeaders(session.ResponseContentHeaders, "Content-Type");
-            ResponseContentTextBox.Text = session == null || string.IsNullOrEmpty(session.ResponseContent)
-                ? string.Empty 
-                : FormatResource(session.ResponseContent, session.ResponseContentHeaders.ContentType.MediaType);
+                ResponseStatusCodeTextBox.Text = session == null || session.ResponseStatusCode == null
+                    ? string.Empty
+                    : (int)session.ResponseStatusCode + " " + session.ResponseStatusCode;
+                ResponseHeadersTextBox.Text = session == null || session.ResponseHeaders == null
+                    ? string.Empty
+                    : string.Join("\r\n",
+                        FormatHeaders(session.ResponseContentHeaders, "Content-Type"),
+                        FormatHeaders(session.ResponseHeaders, "WWW-Authenticate")).Replace("\r\n\r\n", "\r\n").Trim();
+                ResponseContentTextBox.Text = session == null || string.IsNullOrEmpty(session.ResponseContent)
+                    ? string.Empty
+                    : FormatResource(session.ResponseContent, session.ResponseContentHeaders.ContentType.MediaType);
 
-            ErrorTextBox.Text = session == null || session.Exception == null 
-                ? string.Empty 
-                : session.Exception.ToString();
+                ErrorTextBox.Text = session == null || session.Exception == null
+                    ? string.Empty
+                    : session.Exception.ToString();
+            });
         }
 
         private string FormatHeaders(IEnumerable<KeyValuePair<string, IEnumerable<string>>> headers, params string[] keys)

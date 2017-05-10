@@ -1,36 +1,31 @@
-﻿using System.Net;
-using System.Windows;
+﻿using System.Windows;
 
 namespace Finkit.ManicTime.Server.SampleClient.Ui
 {
     public partial class SettingsWindow
     {
-        private ClientSettings _clientSettings;
-
         public SettingsWindow()
         {
             InitializeComponent();
         }
 
-        public static ClientSettings Show(Window owner, ClientSettings clientSettings)
+        public static SettingsWindowViewModel Show(Window owner, SettingsWindowViewModel viewModel)
         {
             var window = new SettingsWindow
             {
                 Owner = owner,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 ResizeMode = ResizeMode.NoResize,
-                SizeToContent = SizeToContent.WidthAndHeight,
-                _clientSettings = clientSettings
+                SizeToContent = SizeToContent.WidthAndHeight
             };
-            window.UpdateForm();
-            return window.ShowDialog() == true ? window._clientSettings : null;
+            window.SetViewModel(viewModel);
+            return window.ShowDialog() == true ? window.GetViewModel() : null;
         }
 
 
 
         private void OkButton_Click(object sender, RoutedEventArgs e)
         {
-            UpdateSettings();
             DialogResult = true;
             Close();
         }
@@ -41,26 +36,25 @@ namespace Finkit.ManicTime.Server.SampleClient.Ui
             Close();
         }
 
-        private void UpdateForm()
+        private void SetViewModel(SettingsWindowViewModel viewModel)
         {
-            if (_clientSettings.Credentials == null)
-            {
-                CurrentUserRadioButton.IsChecked = true;
-            }
-            else
-            {
-                FollowingUserRadioButton.IsChecked = true;
-                UsernameTextBox.Text = _clientSettings.Credentials.UserName;
-                PasswordTextBox.Password = _clientSettings.Credentials.Password;
-                DomainTextBox.Text = _clientSettings.Credentials.Domain;
-            }
+            CurrentUserRadioButton.IsChecked = viewModel.UserType == SettingsWindowUserType.WindowsUser && viewModel.Username == null;
+            FollowingUserRadioButton.IsChecked = viewModel.UserType == SettingsWindowUserType.WindowsUser && viewModel.Username != null;
+            FollowingManicTimeUserRadioButton.IsChecked = viewModel.UserType == SettingsWindowUserType.ManicTimeUser;
+            UsernameTextBox.Text = viewModel.UserType == SettingsWindowUserType.WindowsUser ? viewModel.Username : "";
+            PasswordTextBox.Password = viewModel.UserType == SettingsWindowUserType.WindowsUser ?  viewModel.Password : "";
+            DomainTextBox.Text = viewModel.UserType == SettingsWindowUserType.WindowsUser ? viewModel.Domain : "";
+            ManicTimeUsernameTextBox.Text = viewModel.UserType == SettingsWindowUserType.ManicTimeUser ? viewModel.Username : "";
+            ManicTimePasswordTextBox.Password = viewModel.UserType == SettingsWindowUserType.ManicTimeUser ? viewModel.Password : "";
         }
 
-        private void UpdateSettings()
+        private SettingsWindowViewModel GetViewModel()
         {
-            _clientSettings = new ClientSettings(CurrentUserRadioButton.IsChecked == true
-                    ? null
-                    : new NetworkCredential(UsernameTextBox.Text, PasswordTextBox.Password, DomainTextBox.Text));
+            if (CurrentUserRadioButton.IsChecked == true)
+                return new SettingsWindowViewModel(SettingsWindowUserType.WindowsUser, null, null, null);
+            if (FollowingUserRadioButton.IsChecked == true)
+                return new SettingsWindowViewModel(SettingsWindowUserType.WindowsUser, UsernameTextBox.Text, PasswordTextBox.Password, DomainTextBox.Text);
+            return new SettingsWindowViewModel(SettingsWindowUserType.ManicTimeUser, ManicTimeUsernameTextBox.Text, ManicTimePasswordTextBox.Password, null);
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -26,9 +27,39 @@ namespace Finkit.ManicTime.Server.SampleClient
             _client = new HttpClient(new HttpClientHandler
             {
                 PreAuthenticate = true,
-                Credentials = clientSettings.Credentials,
-                UseDefaultCredentials = clientSettings.Credentials == null
+                Credentials = clientSettings.Credentials.Credentials
             });
+        }
+
+        public async Task<string> AuthenticateOauthAsync(string username, string password, CancellationToken cancellationToken)
+        {
+            ServerHttpResponse<HomeResource> challengeResponse = 
+                await SendHttpAsync<HomeResource>(_serverUrl, HttpMethod.Get, null, cancellationToken).ConfigureAwait(false);
+            string authenticationType = GetAuthenticationType(challengeResponse.Headers);
+            if (authenticationType != AuthenticationTypes.Bearer)
+                throw new InvalidOperationException("Server is not configured for ManicTime authentication.");
+            string tokenUrl = challengeResponse.Resource?.Links.Url(Relations.Token);
+            if (tokenUrl == null)
+                throw new InvalidOperationException("Token url not found.");
+
+            HttpContent tokenContent = new StringContent(
+                $"grant_type=password&username={Uri.EscapeDataString(username ?? "")}&password={Uri.EscapeDataString(password ?? "")}",
+                null, MediaTypes.FormUrlEncoded);
+            ServerHttpResponse<AccessTokenResource> tokenResponse = 
+                await SendHttpAsync<AccessTokenResource>(tokenUrl, HttpMethod.Post, tokenContent, cancellationToken).ConfigureAwait(false);
+
+
+            if (tokenResponse.StatusCode != HttpStatusCode.OK && tokenResponse.StatusCode != HttpStatusCode.BadRequest)
+                throw new InvalidOperationException($"Invalid status code received: {tokenResponse.StatusCode}");
+            if (tokenResponse.StatusCode == HttpStatusCode.BadRequest)
+            {
+                if (tokenResponse.Resource?.Error.Equals("invalid_grant", StringComparison.OrdinalIgnoreCase) == false)
+                    throw new InvalidOperationException($"Unknown error: {tokenResponse.Resource?.Error}");
+                return null;
+            }
+            if (tokenResponse.Resource?.Token == null)
+                throw new InvalidOperationException("Token not received");
+            return tokenResponse.Resource.Token;
         }
 
         public Task<HomeResource> GetHomeAsync(CancellationToken cancellationToken)
@@ -113,7 +144,16 @@ namespace Finkit.ManicTime.Server.SampleClient
             return await SendAsync<UpdateStateResource>(activityUpdatesUrl, HttpMethod.Post, activityUpdates, cancellationToken);
         }
 
-        private async Task<T> SendAsync<T>(string url, HttpMethod method, object value, CancellationToken cancellationToken)
+        private async Task<T> SendAsync<T>(string url, HttpMethod method, object value, CancellationToken cancellationToken) where T : class
+        {
+            var content = value == null
+                ? null
+                : new StringContent(JsonFormatter.Format(value), Encoding.UTF8, MediaTypes.ManicTimeJson);
+            ServerHttpResponse<T> serverResponse = await SendHttpAsync<T>(url, method, content, cancellationToken).ConfigureAwait(false);
+            return serverResponse?.Resource;
+        }
+
+        private async Task<ServerHttpResponse<T>> SendHttpAsync<T>(string url, HttpMethod method, HttpContent content, CancellationToken cancellationToken)
         {
             HttpRequestMessage request = null;
             string requestContent = null;
@@ -123,17 +163,22 @@ namespace Finkit.ManicTime.Server.SampleClient
             object resource = null;
             try
             {
-                requestContent = value == null ? null : JsonFormatter.Format(value);
-                request = new HttpRequestMessage(method, url);
-                if (requestContent != null)
-                    request.Content = new StringContent(requestContent, Encoding.UTF8, MediaTypes.ManicTimeJson);
+                requestContent = content == null 
+                    ? null 
+                    : await content.ReadAsStringAsync().ConfigureAwait(false);
+                request = new HttpRequestMessage(method, url) {Content = content};
+                foreach (KeyValuePair<string, string> header in ClientSettings.Credentials.Headers)
+                {
+                    request.Headers.Add(header.Key, header.Value);
+                }
                 request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(MediaTypes.ManicTimeJson));
 
                 response = await _client.SendAsync(request, cancellationToken);
-                responseContent = await response.Content.ReadAsStringAsync();
+                responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                 if (!string.IsNullOrEmpty(responseContent))
                 {
-                    if (response.Content.Headers.ContentType.MediaType == MediaTypes.ManicTimeJson)
+                    if (response.Content.Headers.ContentType.MediaType == MediaTypes.ManicTimeJson ||
+                        response.Content.Headers.ContentType.MediaType == MediaTypes.ApplicationJson)
                         resource = JsonFormatter.Parse(responseContent, typeof(T));
                 }
             }
@@ -142,7 +187,7 @@ namespace Finkit.ManicTime.Server.SampleClient
                 exception = ex;
             }
             LogSession(request, requestContent, response, responseContent, exception);
-            return (T)resource;
+            return response == null ? null : new ServerHttpResponse<T>(response.StatusCode, response.Headers, (T)resource);
         }
 
         private void LogSession(
@@ -169,6 +214,22 @@ namespace Finkit.ManicTime.Server.SampleClient
         public void Dispose()
         {   
             _client.Dispose();
+        }
+
+        private static string GetAuthenticationType(HttpHeaders headers)
+        {
+            IEnumerable<string> authenticateValues;
+            return headers.TryGetValues("WWW-Authenticate", out authenticateValues)
+                ? GetAuthenticationType(authenticateValues.FirstOrDefault())
+                : null;
+        }
+
+        private static string GetAuthenticationType(string wwwAuthenticateHeaderValue)
+        {
+            int pos = wwwAuthenticateHeaderValue.IndexOfAny(new[] { ' ', ',' });
+            return pos == -1
+                ? wwwAuthenticateHeaderValue.Trim().ToLowerInvariant()
+                : wwwAuthenticateHeaderValue.Substring(0, pos - 1).Trim().ToLowerInvariant();
         }
     }
 }

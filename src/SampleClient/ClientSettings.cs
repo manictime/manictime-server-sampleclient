@@ -1,18 +1,15 @@
-﻿using System.Net;
+﻿using System;
 
 namespace Finkit.ManicTime.Server.SampleClient
 {
-    public static class MediaTypes
-    {
-        public const string ManicTimeJson = "application/vnd.manictime.v2+json";
-    }
-
     public class ClientSettings
     {
-        public NetworkCredential Credentials { get; private set; }
+        public IServerHttpCredentials Credentials { get; }
 
-        public ClientSettings(NetworkCredential credentials = null)
+        public ClientSettings(IServerHttpCredentials credentials)
         {
+            if (credentials == null)
+                throw new ArgumentNullException(nameof(credentials));
             Credentials = credentials;
         }
     }

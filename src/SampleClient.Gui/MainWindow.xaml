@@ -8,6 +8,8 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="5" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="5" />
             <RowDefinition />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
@@ -15,13 +17,18 @@
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
         <Label Content="Server url" HorizontalAlignment="Right" Margin="0 0 5 0" />
+
         <DockPanel Grid.Column="1">
             <Button DockPanel.Dock="Right" x:Name="SettingsButton" Content="Settings..." Click="SettingsButton_OnClick" Padding="5 0 5 0" />
             <Button DockPanel.Dock="Right" x:Name="CancelButton" Content="Cancel request" Click="CancelButton_OnClick" Margin="5 0 5 0" Padding="5 0 5 0" />
             <TextBox x:Name="ServerUrlTextBox" />
         </DockPanel>
-        
-        <StackPanel Grid.Row="2" HorizontalAlignment="Stretch">
+
+        <Label Grid.Row="2" x:Name="AccessTokenLabel" Content="Access token" HorizontalAlignment="Right" Margin="0 0 5 0" />
+        <TextBox Grid.Row="2" Grid.Column="1" x:Name="AccessTokenTextBox" />
+
+        <StackPanel Grid.Row="4" HorizontalAlignment="Stretch">
+            <Button x:Name="LoginButton" Content="Get access token (login)" Click="LoginButton_OnClick" Margin="1" />
             <Button x:Name="HomeButton" Content="Get home" Click="HomeButton_OnClick" Margin="1" />
             <Button x:Name="TimelinesButton" Content="Get timelines" Click="TimelinesButton_OnClick" Margin="1" />
             <Button x:Name="GetActivitiesButton" Content="Get activities" Click="GetActivitiesButton_OnClick" Margin="1" />
@@ -33,7 +40,7 @@
             <Button x:Name="SendActivityUpdatesButton" Content="2. Send activity updates" Click="SendActivityUpdatesButton_OnClick" Margin="1" />
         </StackPanel>
 
-        <Grid Grid.Row="2" Grid.Column="1">
+        <Grid Grid.Row="4" Grid.Column="1">
             <Grid.RowDefinitions>
                 <RowDefinition />
                 <RowDefinition Height="0.5*" />

@@ -8,5 +8,6 @@
         public const string ActivityUpdates = "manictime/activityupdates";
         public const string UpdatedActivities = "manictime/updatedactivities";
         public const string TagCombinationList = "manictime/tagcombinationlist";
+        public const string Token = "manictime/token";
     }
 }
