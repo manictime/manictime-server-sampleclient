@@ -3,7 +3,12 @@
 ## Headers
 With all requests include [Accept] header with value "application/vnd.manictime.v2+json".
 <pre><code>Accept: application/vnd.manictime.v2+json</code></pre>
- 
+
+## Parameters
+fromTime and toTime parameters will accept ISO 8601 format
+- example for date: 2018-05-15, 
+- example for time: 2018-05-15T06:02:06+00:00
+
 ## Authentication
 ManicTime Server can authenticate users in two ways, with Windows or ManicTime authentication.
 
@@ -117,7 +122,7 @@ GET /api/timelines/{timelineId}/activities?fromTime={fromTime}&toTime={toTime}
 
 - {toTime} upper time range boundary (for date use: 2018-05-15, for time use: 2018-05-15T06:02:06+00:00 (ISO 8601 format))
 
-Gets timeline activites within specified time range 
+Gets timeline activities within specified time range 
 
 `curl --header "Accept: application/vnd.manictime.v2+json" --header "Authorization: Bearer a4cee5d8b9b54eefa529e1f288d41f31" "http://localhost:8080/api/timelines/aa731e7f-f4c9-4121-aa96-c9f8f5cfdfba-2/activities?fromTime=2018-05-08&toTime=2018-05-09"`
 
